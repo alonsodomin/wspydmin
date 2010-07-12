@@ -1,0 +1,60 @@
+#!/bin/sh
+
+## WSPydmin - WebSphere Python Administration Library
+## Copyright (C) 2010  Antonio Alonso Domínguez
+##
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Resolve links - $0 may be a softlink - and obtain
+# the root directory of the script environment
+
+DISCLAIMER <<EOF
+WSPydmin  Copyright (C) 2010  Antonio Alonso Domínguez
+
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type `show c' for details.
+EOF
+
+PRG="$0"
+
+while [ -h "${PRG}" ]; do
+	ls=`ls -ld "${PRG}"`
+	link=`expr "${ls}" : '.*->\(.*\)$'`
+	if expr "${link}" : '/.*' > /dev/null; then
+		PRG="${link}"
+	else
+		PRG=`dirname "${PRG}"`/"${link}"
+	fi
+done
+
+export WSPYDMIN_HOME=`dirname ${PRG}`
+export WSPYDMIN_LIB="${WAS_PYTHON_HOME}/python"
+
+if [ ! -f "${WSPYDMIN_HOME}/etc/wspydmin.conf" ]; then
+	echo "ERROR: Configuration file '${WSPYDMIN_HOME}/etc/wspydmin.conf' not found"
+	exit 1
+fi
+
+WSADMIN="${WAS_HOME}/bin/wsadmin.sh"
+export WAS_HOME
+
+if [ -z "$1" ]; then
+	echo $DISCLAIMER
+	${WSADMIN} -lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WAS_PYTHON_LIB}/wasprofile.py -profileName ${WAS_DEFAULT_PROFILE} $*
+else
+	script=$1
+	shift
+	${WSADMIN} -lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WAS_PYTHON_LIB}/wasprofile.py -profileName ${WAS_DEFAULT_PROFILE} -f $script $*
+fi
