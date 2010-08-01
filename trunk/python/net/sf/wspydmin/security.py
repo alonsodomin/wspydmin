@@ -21,7 +21,7 @@ from net.sf.wspydmin.resources import Resource
 
 class JAASAuthData(Resource):
 	DEF_SCOPE = '/Cell:%s/Security:/' % AdminControl.getCell()
-	DEF_ID    = '/JAASAuthData:/'
+	DEF_ID    = '/JAASAuthData:%(alias)s/'
 	DEF_TPL   = None
 	DEF_ATTRS = {
               'alias' : None,
@@ -30,16 +30,15 @@ class JAASAuthData(Resource):
         'description' : None
 	}
 	
+	def __init__(self, alias):
+		Resource.__init__(self)
+		self.alias = alias
+	
 	def __getconfigid__(self, id = None):
 		for res in AdminConfig.list(JAASAuthData.__TYPE__).splitlines():
 			if (not res is None) and (res != '') and (self.alias == AdminConfig.showAttribute(res, 'alias')):
 				return res
 		return None
-	
-	def __setattr__(self, name, value):
-		self.__super__.__setattr__(name, value)
-		if (name == 'alias'):
-			self.__loadattrs__()
 
 class Security(Resource):
 	DEF_SCOPE = None

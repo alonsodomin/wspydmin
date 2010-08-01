@@ -39,16 +39,21 @@ while [ -h "${PRG}" ]; do
 	fi
 done
 
-export WSPYDMIN_HOME=`dirname ${PRG}`
-export WSPYDMIN_LIB="${WAS_PYTHON_HOME}/python"
+WSPYDMIN_HOME=`dirname ${PRG}`
+WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
+WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
 
-if [ ! -f "${WSPYDMIN_HOME}/etc/wspydmin.conf" ]; then
+if [ ! -f "${WSPYDMIN_CONF}" ]; then
 	echo "ERROR: Configuration file '${WSPYDMIN_HOME}/etc/wspydmin.conf' not found"
 	exit 1
 fi
 
+source ${WSPYDMIN_CONF}
 WSADMIN="${WAS_HOME}/bin/wsadmin.sh"
+
 export WAS_HOME
+export WSPYDMIN_HOME
+export WSPYDMIN_LIB
 
 if [ -z "$1" ]; then
 	echo $DISCLAIMER

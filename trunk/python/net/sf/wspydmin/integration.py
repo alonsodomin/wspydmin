@@ -35,7 +35,7 @@ class SIResource(Resource):
 
 class SIBus(SIResource):
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
-	DEF_ID    = '/SIBus:%s/'
+	DEF_ID    = '/SIBus:%(bus)s/'
 	DEF_ATTRS = {
                         'bus' : None,                      
                 'busSecurity' : None, 
@@ -111,7 +111,7 @@ class SIBus(SIResource):
 
 class SIBusMember(SIResource):
 	DEF_SCOPE = '/Cell:%s/'
-	DEF_ID    = '/SIBusMember:%s/'
+	DEF_ID    = '/SIBusMember:%(bus)s/'
 	DEF_ATTRS = {
                                  'bus' : None,
                              'channel' : None,
@@ -148,7 +148,7 @@ class SIBusMember(SIResource):
 	
 	def __init__(self, busName):
 		SIResource.__init__(self)
-		self.busName = busName
+		self.bus = bus
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
@@ -166,7 +166,7 @@ class SIBusMember(SIResource):
 
 class SIBJMSConnectionFactory(SIResource):
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
-	DEF_ID    = '/SIBJMSConnectionFactory:%s/'
+	DEF_ID    = '/SIBJMSConnectionFactory:%(name)s/'
 	DEF_ATTRS = {
                                   'name' : None,
                               'jndiName' : None,
@@ -207,6 +207,7 @@ class SIBJMSConnectionFactory(SIResource):
 		self.jndiName = jndiName
 		self.busName  = busName
 		self.type     = type
+		self.parent   = parent
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
@@ -232,7 +233,7 @@ class SIBJMSTopicConnectionFactory(SIBJMSConnectionFactory):
 
 class SIBJMSTopic(SIResource):
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
-	DEF_ID    = '/SIBJMSTopic:%s/'
+	DEF_ID    = '/SIBJMSTopic:%(name)s/'
 	DEF_ATTRS = {
                 "name" : None,
             "jndiName" : None,
@@ -267,7 +268,7 @@ class SIBJMSTopic(SIResource):
 
 class SIBDestination(SIResource):
 	DEF_SCOPE = None                    # '/Cell:%s/'
-	DEF_ID    = '/SIBDestination:%s/',
+	DEF_ID    = '/SIBDestination:%(name)s/',
 	DEF_ATTRS = {
                 "bus" : None,
                "name" : None,
@@ -290,7 +291,7 @@ class SIBDestination(SIResource):
 
 class SIBJMSQueue(SIResource):
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
-	DEF_ID    = '/SIBJMSQueue:%s/'
+	DEF_ID    = '/SIBJMSQueue:%(name)s/'
 	DEF_ATTRS = {
                 "name" : None,
             "jndiName" : None,
@@ -316,7 +317,7 @@ class SIBJMSQueue(SIResource):
 		if self.queueName is None:
 			self.queueName = '_SYSTEM.Exception.Destination.%s.%s-%s' % (
 					Node().getName(), 
-					getServerName(Cell().getAdminServers()[0]), 
+					getServerName(self.parent.getAdminServers()[0]), 
 					self.busName
 			)
 		
@@ -328,7 +329,7 @@ class SIBJMSQueue(SIResource):
 			AdminTask.createSIBJMSQueue(self.__scope__, params)
 		
 	def assignDestinationToManagedServerOrCluster(self, serverOrCluster):
-		cell = Cell()
+		cell = self.parent
 		
 		if cell.isClustered():
 			clusterName = cell.getCluster(serverOrCluster).getName()
@@ -348,7 +349,7 @@ class SIBJMSQueue(SIResource):
 
 class SIBJMSActivationSpec(SIResource):
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
-	DEF_ID    = '/J2CActivationSpec:%s/'
+	DEF_ID    = '/J2CActivationSpec:%(name)s/'
 	DEF_ATTRS = {
                            'name' : None,
                        'jndiName' : None,

@@ -27,12 +27,11 @@ from net.sf.wspydmin.transaction import TransactionService
 from net.sf.wspydmin.vars        import VariableSubstitutionEntry
 from net.sf.wspydmin.jvm         import JavaVirtualMachine
 
-class Cell:
-	DEF_ID = '/Cell:%s/'
+class Cell(Resource):
+	DEF_ID = '/Cell:%(name)s/'
 	
 	def __init__(self, name = AdminControl.getCell()):
 		self.name   = name
-		self.__id__ = Cell.DEF_ID % name
 
 	def __getconfigid__(self):
 		return AdminConfig.getid(self.__id__)
@@ -138,14 +137,14 @@ class VirtualHost(Resource):
 		self.addHostAlias('*', getBasePort()+increment)
 	
 	def getHostAliasIds(self):
-		return AdminConfig.list('HostAlias', self.id)
+		return AdminConfig.list('HostAlias', self.__id__)
 	
 	def removeHostAliases(self):
 		for hostAliasId in self.getHostAliasIds():
 			AdminConfig.remove(hostAliasId)
 	
 class Cluster(MBean):
-	def __init__(self, name, parent = None):
+	def __init__(self, name, parent = Cell()):
 		self.name   = name
 		self.parent = parent
 		
@@ -160,11 +159,11 @@ class Cluster(MBean):
 			raise IllegalArgumentException, "No cluster '%s' was found in cell '%s'" % (self.name, AdminControl.getCell())
 	
 	def __getmbeanid__(self):
-		return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (AdminControl.getCell(), self.name))
+		return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.parent.name, self.name))
 
 class Server(MBean):
 	DEF_SCOPE = '/Node:%(nodeName)s/'
-	DEF_ID    = '%(scope)sServer:%(name)s/'
+	DEF_ID    = '%(scope)sServer:%(serverName)s/'
 	DEF_TPL   = None
 	DEF_ATTRS = {}
 	
@@ -172,11 +171,7 @@ class Server(MBean):
 		MBean.__init__(self)
 		self.serverId   = serverId
 		self.nodeName   = serverId.split('nodes/')[1].split('/servers')[0]
-		self.serverName = getServerName(serverId)		
-	
-	def __hydrate__(self):
-		self.__scope__ = Server.DEF_SCOPE % { 'nodeName' : self.nodeName }
-		self.__id__    = Server.DEF_ID % { 'scope' : self.__scope__, 'name' : self.serverName }
+		self.serverName = getServerName(serverId)
 	
 	def addApplicationFirstClassLoader(self):
 		classLoaderIds = AdminConfig.list('Classloader',self.__getconfigid__()).splitlines()
@@ -251,7 +246,7 @@ class NodeAgent(Server):
 		#self.nodeName = getNodeName(serverId)
 
 	def __getmbeanid__(self):
-		queryResult = AdminControl.queryNames('cell=%s,processType=NodeAgent,process=nodeagent,node=%s,*' % (AdminControl.getCell(), selg.nodeName))
+		queryResult = AdminControl.queryNames('cell=%s,processType=NodeAgent,process=nodeagent,node=%s,*' % (AdminControl.getCell(), self.nodeName))
 		if (queryResult != ''):
 			return queryResult.splitlines()[0]
 		else:

@@ -121,11 +121,8 @@ class OracleDataSource(DataSource):
 		              'oracleLogPackageName' : 'oracle.jdbc.driver'
 	}
 	
-	def __init__(self, name, provider = None):
-		DataSource.__init__(self)
-		if provider is None: provider = OracleJDBCProvider()
-		
-		self.__provider__              = provider
+	def __init__(self, name, provider = OracleJDBCProvider()):
+		DataSource.__init__(self, provider)
 		self.name                      = name
 		self.dataSourceHelperClassName = 'com.ibm.websphere.rsadapter.OracleDataStoreHelper'		
 

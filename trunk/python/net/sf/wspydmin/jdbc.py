@@ -75,68 +75,86 @@ class JDBCProvider(Resource):
 		self.name = name
 
 class DataSource(J2EEPropertySetResource):
+	DEF_ID    = '%(scope)sDataSource:%(name)s'
+	DEF_SCOPE = None
+	DEF_ATTRS = {
+		   'authDataAlias' : None,
+		    	'provider' : None,
+			'providerType' : None,
+	 'xaRecoveryAuthAlias' : None
+	}
 	
 	AUTH_DATA_ALIAS = 'JDBC_%(userId)s_%(name)s'
 	
-	def __init__(self):
+	def __init__(self, provider):
 		J2EEPropertySetResource.__init__(self)
 		self.__auth__     = None
-		self.__cmp__      = None
-		self.__cmpcf__    = None		
-		self.__provider__ = None
+		self.__iscmp__    = None
+		self.__cmpcf__    = None
+		
+		self.parent       = provider
+		self.provider     = self.parent.__getconfigid__()
+		self.providerType = self.parent.providerType
 	
 	def __create__(self, update):
 		#1.- Configure Auth Data       
 		if not self.__auth__ is None:                    
-			alias = DataSource.AUTH_DATA_ALIAS % {
-				'userId' : self.__auth__.userId, 
-				'name'   : self.name
-			}
-			self.__auth__.alias = alias
 			self.__auth__.__create__(update)
 			self.authDataAlias = self.__auth__.alias
-			if self.__provider__.xa == 'true':
+			if self.parent.xa:
 				self.xaRecoveryAuthAlias = self.__auth__.alias
 		
 		#2.- Configure JDBC Provider
-		self.__provider__.__create__(update)
-		self.provider     = self.__provider__.__getconfigid__()
-		self.providerType = self.__provider__.providerType
-		self.__scope__    = self.__provider__.id
+		self.parent.__create__(update)
 		
 		#3.- Configure Data source
 		J2EEPropertySetResource.__create__(self, update)
 		
 		#4.- Configure CMP Factory if needed
-		if not (self.__cmp__ is None):
+		if not (self.__iscmp__ is None):
 			self.__cmpcf__.authDataAlias = alias
 			self.__cmpcf__.cmpDatasource = self.__getconfigid__()
-			if self.__cmp__:
-				self.__cmpcf__.create()
+			if self.__iscmp__:
+				if not self.__cmpcf__.exists():
+					self.__cmpcf__.create()
+				else:
+					self.__cmpcf__.update()
 			else:
 				self.__cmpcf__.remove()
-	
-	def __setattr__(self, name, value):
-		J2EEPropertySetResource.__setstdattr__(self, name, value)
-		if (name == '__cmp__'):
-			self.__cmp__   = (value == 'true')
-			self.__cmpcf__ = CMPConnectorFactory("%s_CF" % self.name)				
 
 	def getAuthData(self):
 		if not self.exists(): return None
-		if self.__auth__ is None:
-			self.__auth__ = JAASAuthData()
-			self.__auth__.alias = self.authDataAlias
+		if (self.__auth__ is None) and (not self.authDataAlias is None):
+			self.__auth__ = JAASAuthData(self.authDataAlias)
 		return self.__auth__
 	
 	def setAuthData(self, user, password, desc = None):
-		self.__auth__             = JAASAuthData()
+		alias = DataSource.AUTH_DATA_ALIAS % {
+			'userId' : user, 
+			'name'   : self.name
+		}
+		
+		self.__auth__             = JAASAuthData(alias)
 		self.__auth__.userId      = user
 		self.__auth__.password    = password
 		self.__auth__.description = desc
 	
 	def getConnectionPool(self):
 		return ConnectionPool(self)
+	
+	def isContainerManaged(self):
+		return self.__iscmp__
+	
+	def enableCMP(self):
+		if self.__iscmp__:
+			raise Exception, 'CMP already enabled on DataSource "%s"' % self.__id__
+		
+		self.__iscmp__ = 1
+		self.__cmpcf__ = CMPConnectorFactory("%s_CF" % self.name)
+	
+	def disableCMP(self):
+		self.__iscmp__ = 0
+		self.__cmpcf__ = None
 	
 	def testConnection(self):
 		return AdminControl.testConnection(self.__getconfigid__())

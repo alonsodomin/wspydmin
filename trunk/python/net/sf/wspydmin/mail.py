@@ -28,4 +28,8 @@ class MailSession(Resource):
                 'mailFrom' : None,
        'mailTransportHost' : None
 	}
+	
+	def __init__(self, name):
+		self.__super__()
+		self.name = name
 
