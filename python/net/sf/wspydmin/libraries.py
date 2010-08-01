@@ -24,7 +24,7 @@ from net.sf.wspydmin.resources     import Resource
 from net.sf.wspydmin.classloaders  import ClassLoader
 
 class Library(Resource):
-	DEF_ID    = '/Library:%s/'
+	DEF_ID    = '/Library:%(name)s/'
 	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ATTRS = {
                'name' : None,
@@ -33,7 +33,7 @@ class Library(Resource):
         'description' : None
 	}
 	
-	__NAMEPREFIX__ = 'CUSTOMLIB_'
+	__NAMEPREFIX__ = 'WSPYDMINLIB_'
 	
 	def __init__(self, name):
 		Resource.__init__(self)
@@ -74,9 +74,9 @@ class Library(Resource):
 		map(
 			lambda x: Library(x).remove(), # remove library by given name
 			map(
-				lambda x: x.split('(')[0].split('CUSTOMLIB_')[1], # get library name from ID 
+				lambda x: x.split('(')[0].split(Library.__NAMEPREFIX__)[1], # get library name from ID 
 				filter( 
-					lambda x: x.startswith('CUSTOMLIB_'), # get only custom libraries
+					lambda x: x.startswith(Library.__NAMEPREFIX__), # get only custom libraries
 					AdminConfig.list(self.__type__).splitlines()
 				)
 			)
@@ -86,7 +86,7 @@ class LibraryRef(Resource):
 	DEF_SCOPE = None
 	DEF_ID    = '/LibraryRef:/'
 	DEF_ATTRS = {
-        'libraryName' : None,                          
+              'libraryName' : None,                          
         'sharedClassloader' : None
 	}
 	
@@ -96,11 +96,12 @@ class LibraryRef(Resource):
 		self.targetResourceName = targetResourceName
 		
 		#TODO implement libraryRef on Server with the right classloading mode later with targetResourceType='Server'
-		if ((targetResourceName is None) or (targetResourceName=='')):
+		if ((targetResourceName is None) or (targetResourceName == '')):
 			raise IllegalArgumentException, 'Cannot create a library Ref on a (server or application) with no name'
 		self.parent = ClassLoader(targetResourceName)
 	
 	def __postinit__(self):	
+		self.__super__.__postinit__()
 		if (self.__scope__ is None):   # <-- scope = parent.__id__
 			raise IllegalStateException, 'Cannot create a library Ref on a (server or application) that does not exist'
 	
@@ -113,8 +114,8 @@ class LibraryRef(Resource):
 		return None
 	
 	def enableSharedClassloader(self):
-		self.sharedClassloader = 'true'
+		self.sharedClassloader = 1
     
 	def disableSharedClassloader(self):
-		self.sharedClassloader = 'false'
+		self.sharedClassloader = 0
 

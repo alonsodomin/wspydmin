@@ -90,7 +90,7 @@ class WasStringDataType(WasDataType):
 	def from_str(self, value):
 		if (value == '') or (value is None): return None
 		if value.startswith('"') and value.endswith('"'):
-			value = value[1:len(value)-1]
+			value = value[1:-1]
 		return value
 	
 	def to_str(self, value):
@@ -147,6 +147,7 @@ class WasObjectHelper:
 	def __helperinit__(self, klass):
 		self.__klass__ = klass
 		self.__type__  = klass.__name__
+		self.__super__ = WasObjectSuperHelper(self, klass)
 	
 	def __getattr__(self, name):
 		# Invoked for any attr not in the instance's __dict__
@@ -164,6 +165,28 @@ class WasObjectHelper:
 	
 	def __missedattr__(self, name):
 		raise AttributeError, name
+
+class WasObjectSuperHelper:
+	
+	def __init__(self, instance, klass):
+		self.instance = instance
+		self.klass = klass
+	
+	def __getattr__(self, name):
+		for base in self.klass.__bases__:
+			try:
+				return base.__getattr__(name)
+			except AttributeError:
+				pass
+		raise AttributeError, name
+		
+	def __call__(self, *args, **kwargs):
+		for base in self.klass.__bases__:
+			try:
+				init = getattr(base, '__init__')
+				apply(init, (self.instance,) + args, kwargs)
+			except AttributeError:
+				pass
 
 class WasObjectClass:
 	__helper__    = WasObjectHelper

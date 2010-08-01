@@ -25,13 +25,17 @@ class MQQueueConnectionFactory(Resource):
 	DEF_TPL   = 'Example non-XA WMQ QueueConnectionFactory'
 	DEF_ATTRS = {
                     'name' : None,
-                'jndiName' : 'jms/%(name)s',
+                'jndiName' : None,
                     'host' : None,
                     'port' : None,
             'queueManager' : None,
            'transportType' : None,
                  'channel' : None
 	}
+	
+	def __init__(self, name):
+		self.__super__()
+		self.name = name
 		
 	def getConnectionPool(self):
 		return ConnectionPool(self, 0)
@@ -49,8 +53,12 @@ class MQQueue(Resource):
 	DEF_TPL   = 'Example.JMS.WMQ.Q1'
 	DEF_ATTRS = {
                     'name' : None,
-                'jndiName' : 'jms/%(name)s',
+                'jndiName' : None,
             'targetClient' : None,
            'baseQueueName' : None,
     'baseQueueManagerName' : None
 	}
+	
+	def __init__(self, name):
+		self.__super__()
+		self.name = name

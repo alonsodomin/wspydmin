@@ -18,10 +18,10 @@
 from net.sf.wspydmin            import AdminConfig, AdminControl
 from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.admin      import Cell
-from net.sf.wspydmin.properties import Property
+from net.sf.wspydmin.properties import PropertySetResource
 
-class PMIService(Resource):
-	DEF_ID    = '/Cell:%(cell)s/Node:%(node)s/Server:%(server)s/'
+class PMIService(PropertySetResource):
+	DEF_ID    = '%(scope)sNode:%(node)s/Server:%(server)s/'
 	DEF_SCOPE = None
 	DEF_ATTRS = {
 		           'enable' : None,
@@ -32,8 +32,8 @@ class PMIService(Resource):
 	
 	def __init__(self, node, server, parent = Cell()):
 		Resource.__init__(self)
+		self.node           = node
 		self.parent         = parent
-		self.__properties__ = {}
 
 	def __collectattrs__(self):
 		attrs = self.__super__.__collectattrs__(self)
@@ -46,11 +46,3 @@ class PMIService(Resource):
 	def __getconfigid__(self):
 		return AdminConfig.list(self.__type__, self.__id__).splitlines()[0]
 
-	def getProperty(self, name):
-		return self.__properties__[name].value
-	
-	def setProperty(self, name, value):
-		prop = Property(self)
-		prop.name  = name
-		prop.value = value
-		self.__properties__[name] = prop

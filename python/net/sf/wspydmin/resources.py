@@ -26,7 +26,8 @@ class AbstractResourceError(Exception):
 	pass
 
 class Resource(WasObject):
-	__TEMPLATES__ = {}
+	__DEF_PATTERN__ = re.compile('\%\(\w+\)[s|i]')
+	__TEMPLATES__   = {}
 	
 	def __init__(self):
 		if not hasattr(self, 'DEF_ID'):
@@ -157,10 +158,24 @@ class Resource(WasObject):
 		return was_getconfigid(self.__id__)
 	
 	def __hydrate__(self):
-		if hasattr(self, 'parent') and (self.__scope__ is None):
-			self.__scope__ = getattr(self, 'parent').__id__
-		if hasattr(self, 'name') and hasattr(self, 'DEF_ID'):
-			self.__id__ = self.DEF_ID % {'scope': self.__scope__, 'name': getattr(self, 'name')}
+		mydict = {}
+		map(lambda x: mydict[x] = self.__attrmap__[x], 
+			filter(lambda x: return (not x.startswith('__') and not x.endswith('__')), 
+				self.__attrmap__.keys()
+			)
+		)
+		
+		if (self.__scope__ is None):
+			if hasattr(self, 'parent'):
+				self.__scope__ = getattr(self, 'parent').__id__
+			else:
+				self.__scope__ = AdminControl.getCell()
+		elif not (Resource.__DEF_PATTERN__.search(self.__scope__) is None):
+			self.__scope__ = getattr(self, 'DEF_SCOPE') % mydict
+		
+		mydict['scope'] = self.__scope__
+		
+		self.__id__ = getattr(self, 'DEF_ID') % mydict
 	
 	def __remove__(self, deep):
 		if deep:

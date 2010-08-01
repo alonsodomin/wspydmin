@@ -50,4 +50,4 @@ class ConnectionPool(Resource):
 		self.index  = index
 	
 	def __getconfigid__(self):
-		return AdminConfig.getid(self.__id__).splitlines()[self.__index__]
+		return AdminConfig.getid(self.__id__).splitlines()[self.index]
