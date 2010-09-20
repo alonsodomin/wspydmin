@@ -101,7 +101,7 @@ class DataSource(J2EEPropertySetResource):
 		if not self.__auth__ is None:                    
 			self.__auth__.__create__(update)
 			self.authDataAlias = self.__auth__.alias
-			if (self.parent.xa and (self.xaRecoveryAlias == "")):
+			if (self.parent.xa and (self.xaRecoveryAlias is None)):
 				# If provider is XA enabled, then configure XA recovery alias
 				self.xaRecoveryAuthAlias = self.__auth__.alias
 		
@@ -124,9 +124,10 @@ class DataSource(J2EEPropertySetResource):
 				self.__cmpcf__.remove()
 
 	def getAuthData(self):
-		if not self.exists(): return None
 		if (self.__auth__ is None) and (not self.authDataAlias is None):
 			self.__auth__ = JAASAuthData(self.authDataAlias)
+		if (self.__auth__ is None) and (not self.exists()): 
+			return None
 		return self.__auth__
 	
 	def setAuthData(self, user, password, desc = None):

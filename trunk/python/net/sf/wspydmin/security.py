@@ -35,7 +35,7 @@ class JAASAuthData(Resource):
 		self.alias = alias
 	
 	def __getconfigid__(self, id = None):
-		for res in AdminConfig.list(JAASAuthData.__TYPE__).splitlines():
+		for res in AdminConfig.list(self.__type__).splitlines():
 			if (not res is None) and (res != '') and (self.alias == AdminConfig.showAttribute(res, 'alias')):
 				return res
 		return None

@@ -23,5 +23,7 @@ if "%HOME%" == "" (set "HOME=%HOMEDRIVE%%HOMEPATH%")
 if "%OS%"=="Windows_NT" @setlocal
 if "%OS%"=="WINNT" @setlocal
 
-if "%OS%"=="Windows_NT" SET "WSPYDMIN_HOME=%~dp0.."
-if "%OS%"=="WINNT" SET "WSPYDMIN_HOME=%~dp0.."
+if "%OS%"=="Windows_NT" set "WSPYDMIN_HOME=%~dp0.."
+if "%OS%"=="WINNT" set "WSPYDMIN_HOME=%~dp0.."
+
+set "WSPYDMIN_LIB=%WSPYDMIN_HOME%\python"

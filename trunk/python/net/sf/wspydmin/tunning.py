@@ -60,25 +60,30 @@ class SessionManager(Resource):
                         "properties" : None,
         "sessionDatabasePersistence" : None,
             "sessionPersistenceMode" : "NONE",
-                      "tuningParams" : None
+                     "tunningParams" : None
 	}
 	
 	def __init__(self, parent):
 		Resource.__init__(self)
-		self.parent = parent
+		self.parent      = parent
+		self.__tunning__ = TunningParams(self.parent)
+
+	def __postinit__(self):
+		Resource.__postinit__(self)
+		self.tunningParams = self.__tunning__.__getconfigid__()
 
 	def __getconfigid__(self, id = None):
 		return AdminConfig.list(self.__type__, self.parent.__getconfigid__())
 
 	def __getattr__(self, name):
 		if (name == 'tunningParams'):
-			return TunningParams(self.parent)
+			return self.__tunning__
 		else:
 			return Resource.__getattr__(self, name)
 	
 	def __setattr__(self, name, value):
-		if (name == 'tunningParams') and (value is not None):
-			self.tunningParams = value.__getconfigid__()
+		if (name == 'tunningParams'):
+			raise AttributeError, "'tunningParams' is not writeable"
 		else:
 			Resource.__setattr__(self, name, value)
 

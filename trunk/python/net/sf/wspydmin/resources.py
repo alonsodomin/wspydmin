@@ -123,7 +123,7 @@ class Resource(WasObject):
 	def __loadattrs__(self):
 		if not self.exists(): return
 		for attr in AdminConfig.show(self.__getconfigid__()).splitlines():
-			attr = attr[1:len(attr)-1]          # Drop '[' and ']' from attribute string
+			attr = attr[1:-1]               # Drop '[' and ']' from attribute string
 			name = attr.split(None, 1)[0]
 			self.__attrmap__[name] = self.__parseattr__(name, attr.split(None, 1)[1])
 	
