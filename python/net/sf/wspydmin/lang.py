@@ -280,7 +280,7 @@ def was_getconfigid(id):
 def was_type(typename):
 	if (typename == '') or (typename is None): return None
 	if typename.endswith('*'):
-		typename = typename[0:len(typename)-1]
+		typename = typename[0:-1]
 		return WasArrayDataType(was_type(typename))
 	elif WAS_DATATYPES.has_key(typename):
 		return WAS_DATATYPES[typename]

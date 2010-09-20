@@ -101,7 +101,8 @@ class DataSource(J2EEPropertySetResource):
 		if not self.__auth__ is None:                    
 			self.__auth__.__create__(update)
 			self.authDataAlias = self.__auth__.alias
-			if self.parent.xa:
+			if (self.parent.xa and (self.xaRecoveryAlias == "")):
+				# If provider is XA enabled, then configure XA recovery alias
 				self.xaRecoveryAuthAlias = self.__auth__.alias
 		
 		#2.- Configure JDBC Provider

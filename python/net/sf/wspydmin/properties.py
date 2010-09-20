@@ -109,7 +109,7 @@ class PropertySetResource(Resource):
 	def getProperty(self, name):
 		if not self.__properties__.has_key(name):
 			raise AttributeError, name
-		return self.__properties__[name] = value
+		return self.__properties__[name]
 	
 	def setProperty(self, name, value):
 		if not self.__properties__.has_key(name):
