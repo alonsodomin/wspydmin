@@ -31,7 +31,7 @@ class Resource(WasObject):
 	
 	def __init__(self):
 		if not hasattr(self, 'DEF_ID'):
-			raise AbastractResourceError, self.__type__
+			raise AbstractResourceError, self.__type__
 
 		self.__id__ = getattr(self, 'DEF_ID')
 		try:
@@ -55,7 +55,6 @@ class Resource(WasObject):
 		
 	def __postinit__(self):
 		if self.__type__ is None: return
-		print "Processing attribute types"
 		attrdef = AdminConfig.attributes(self.__type__)
 		if (attrdef is not None) and (attrdef != ''):
 			for atype in attrdef.splitlines():
@@ -63,13 +62,10 @@ class Resource(WasObject):
 				value = atype.split()[1]			
 				self.__typemap__[name] = was_type(value)
 		
-		print "Assembling instance"
 		self.__hydrate__()
 		if self.exists():
-			print "Loading was data"
 			self.__loadattrs__()
 		else:
-			print "Loading default data"
 			self.__loaddefaults__()
 	
 	def __create__(self, update):
@@ -159,8 +155,9 @@ class Resource(WasObject):
 	
 	def __hydrate__(self):
 		mydict = {}
-		map(lambda x: mydict[x] = self.__attrmap__[x], 
-			filter(lambda x: return (not x.startswith('__') and not x.endswith('__')), 
+		map(lambda x: mydict[x] = self.__attrmap__[x],
+			filter(
+				lambda x: return (not x.startswith('__') and not x.endswith('__'),
 				self.__attrmap__.keys()
 			)
 		)
