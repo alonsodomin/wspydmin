@@ -24,7 +24,10 @@ class J2EEPropertySetResource(Resource):
 
 	def __init__(self):
 		Resource.__init__(self)
-		self.__defaults__    = copy.copy(getattr(self, 'DEF_PROPS'))
+		if hasattr(self, 'DEF_PROPS'):
+			self.__defaults__    = copy.copy(getattr(self, 'DEF_PROPS'))
+		else:
+			self.__defaults__ = {}
 		self.__propertySet__ = J2EEResourcePropertySet(self)
 	
 	def __create__(self, update):

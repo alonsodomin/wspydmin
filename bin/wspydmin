@@ -44,22 +44,43 @@ WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
 WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
 
 if [ ! -f "${WSPYDMIN_CONF}" ]; then
-	echo "ERROR: Configuration file '${WSPYDMIN_HOME}/etc/wspydmin.conf' not found"
+	echo "ERROR: Configuration file '${WSPYDMIN_CONF}' not found"
 	exit 1
 fi
 
 source ${WSPYDMIN_CONF}
-WSADMIN="${WAS_HOME}/bin/wsadmin.sh"
+
+if [ -z "${WAS_HOME}" ]; then
+	echo "ERROR: Configuration variable WAS_HOME was not set."
+	exit 1
+fi
+
+if [ ! -d "${WAS_HOME}" ]; then
+	echo "ERROR: WAS_HOME: ${WAS_HOME} is not a directory."
+	exit 1
+fi
+
+WSADMIN_CMD="${WAS_HOME}/bin/wsadmin.sh"
+
+if [ ! -f "${WASADMIN_CMD}" ]; then
+	echo "ERROR: WAS scripting interpreter '${WSADMIN_CMD}' doesn't exists."
+	exit 1
+fi
 
 export WAS_HOME
 export WSPYDMIN_HOME
 export WSPYDMIN_LIB
 
+WSADMIN_ARGS="-lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WSPYMIN_LIB}/wasprofile.py"
+if [ ! -z "${WAS_DEFAULT_PROFILE}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -profileName ${WAS_DEFAULT_PROFILE}"
+fi
+
 if [ -z "$1" ]; then
 	echo $DISCLAIMER
-	${WSADMIN} -lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WAS_PYTHON_LIB}/wasprofile.py -profileName ${WAS_DEFAULT_PROFILE} $*
+	${WSADMIN_CMD} ${WSADMIN_ARGS} $*
 else
 	script=$1
 	shift
-	${WSADMIN} -lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WAS_PYTHON_LIB}/wasprofile.py -profileName ${WAS_DEFAULT_PROFILE} -f $script $*
+	${WSADMIN_CMD} ${WSADMIN_ARGS} -f $script $*
 fi
