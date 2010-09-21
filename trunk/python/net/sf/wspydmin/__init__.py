@@ -16,4 +16,9 @@
 ##
 
 # import WAS objects
+
+__author__  = "A. Alonso Dominguez <alonsoft@users.sf.net>"
+__status__  = "alpha"
+__version__ = "0.2.0"
+
 import AdminTask, AdminConfig, AdminControl, AdminApp, Help

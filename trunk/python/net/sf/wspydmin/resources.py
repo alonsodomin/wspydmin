@@ -200,11 +200,13 @@ class Resource(WasObject):
 			id = self.__getconfigid__()
 			AdminConfig.remove(id)
 			if self.exists():
-				raise Exception, "Resource '%s' under scope '%s' has not been removed as expected! (id: %s)" % (self.__type__, id.split('/')[-1].split('|')[0], id)
+				#raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__type__, id.split('/')[-1].split('|')[0], id)
+				raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__type__, self.__id__, self.__scope__)
 			else:
-				print "Resource '%s' under scope '%s' removed (id: %s)." % (self.__type__, id.split('/')[-1].split('|')[0], id)
+				#print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  id.split('/')[-1].split('|')[0], id)
+				print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  self.__scope__)
 		else:
-			print "WARN: resource '%s' does not exist. Nothing done." % self.__id__
+			print "WARN: resource '%s(id=%s)' does not exist under scope '%s'. Nothing done." % (self.__type__, self.__id__, self.__scope__)
 	
 	def __settmpl__(self, template):
 		if (template is not None) and Resource.__TEMPLATES__[self.__type__].has_key(template):
