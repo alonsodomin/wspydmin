@@ -15,6 +15,8 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
+import logging
+
 from java.lang                   import IllegalArgumentException, IllegalStateException
 
 from net.sf.wspydmin             import AdminConfig, AdminControl, AdminTask
@@ -71,8 +73,8 @@ class Cell(Resource):
 		adm  = filter(isAdminHost, AdminTask.listServerPorts(srv).splitlines())
 		port = map(getPort, adm)[0]
         
-		print 'Admin host port (port range start) is %i' % port 
-		return port
+        logging.debug("Admin host port (port range start) is %i" % port)
+        return port
     
 	def getCluster(self, name = None):
 		#TODO: return an array or map containing all clusters in this cell
@@ -180,21 +182,21 @@ class Server(MBean):
 	
 	def addApplicationFirstClassLoader(self):
 		classLoaderIds = AdminConfig.list('Classloader',self.__getconfigid__()).splitlines()
-		print '%i classloader(s) is defined on server %s' % (len(classLoaderIds), self.serverName)
+		logging.debug('%i classloader(s) is defined on server %s' % (len(classLoaderIds), self.serverName))
 		if(len(classLoaderIds)>2):
 			raise IllegalStateException, 'There is more than two classloader on server %s. another classloader cannot be added for safety reasons'  % (self.id)
 		if(len(classLoaderIds)==2):
 			raise IllegalStateException, 'CSE WAS Automation FW does not support several classloader for server.. please contact architecture team'
 		if(len(classLoaderIds)==1):
 			classLoaderMode = AdminConfig.showAttribute(classLoaderIds[0],'mode')
-			print 'server %s already has one %s classloader defined' % (self.serverName, classLoaderMode)
+			logging.debug('server %s already has one %s classloader defined' % (self.serverName, classLoaderMode))
 			if (classLoaderMode=='PARENT_LAST'):
-				print 'a PARENT_LAST ClassLoader already exist on this server.. there is no need to create another one'
+				logging.info('a PARENT_LAST ClassLoader already exist on this server.. there is no need to create another one')
 			if (classLoaderMode=='PARENT_FIRST'):
 				raise IllegalStateException, 'CSE WAS Automation FW does not support several classloader for server.. please contact architecture team'     		
 		if(len(classLoaderIds)==0):
 			#TODO refactoring on class loader class to have proper scope SERVER other than application
-			print 'about to create a new classloader PARENT_LAST on server %s' % (self.__getconfigid__())
+			logging.debug('about to create a new classloader PARENT_LAST on server %s' % (self.__getconfigid__()))
 			AdminConfig.create('Classloader',self.getApplicationServerId(),[['mode','PARENT_LAST']])
 	
 	def getApplicationServerId(self):
