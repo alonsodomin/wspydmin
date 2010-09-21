@@ -1,19 +1,19 @@
-## WSPydmin - WebSphere Python Administration Library
-## Copyright (C) 2010  Antonio Alonso Domínguez
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see <http://www.gnu.org/licenses/>.
-##
+# WSPydmin - WebSphere Python Administration Library
+# Copyright (C) 2010  Antonio Alonso Domínguez
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import copy, types
 
@@ -25,24 +25,63 @@ from net.sf.wspydmin      import AdminConfig
 ##                         WebSphere types                            ##
 ########################################################################
 
+##
+# Abstract representation of a WebSphere type.
+# A WebSphere type is any primitive or object supported by
+# the WebSphere Application Server
+#
+# @author: A. Alonso Dominguez
 class WasDataType:
+	
+	##
+	# Initializes the type
+	# @param typename: name of this type 
 	def __init__(self, typename):
 		self.typename = typename
 	
+	##
+	# Transforms a string into a python valid value
+	# @param value: a string value
+	# @return: nothing
 	def from_str(self, value):
 		pass
 	
+	##
+	# Transforms any value into a string
+	# @param value: any value
+	# @return: nothing
 	def to_str(self, value):
 		pass
 	
+	##
+	# Offers a string representation of this type
 	def __str__(self):
 		return self.typename
 
+##
+# Typed array implementation
+#
+# @author: A. Alonso Dominguez
 class WasArrayDataType(WasDataType):
+	
+	##
+	# Initializes the array type
+	# @param elemType: WasDataType for the elements of this array type
 	def __init__(self, elemType):
+		if not hasattr(elemType, 'typename'):
+			raise IllegalArgumentException, 'Invalid element type received'
+		
+		elemTypename = elemType.typename
+		if (elemTypename is None) or (len(elemTypename) == 0):
+			raise IllegalArgumentException, 'Invalid element type received'
+		
 		WasDataType.__init__(self, elemType.typename + '*')
 		self.elemType = elemType
 	
+	##
+	# Transforms a string into an array of values
+	# @param value: any string
+	# @return: a python list containing the elements listed in the string
 	def from_str(self, value):
 		if (value == '') or (value is None): return None
 		obj = []
@@ -52,7 +91,11 @@ class WasArrayDataType(WasDataType):
 		for elem in values:
 			obj.append(self.elemType.from_str(elem))
 		return obj
-	
+
+	##
+	# Transforms a python list into a string which represents the array data
+	# @param value: a python list
+	# @return: a string representing the array data	
 	def to_str(self, value):
 		if value is None: return ''
 		str = '['
@@ -67,20 +110,36 @@ class WasArrayDataType(WasDataType):
 		str = str + ']'
 		return str
 
+##
+# Boolean data types handler
+#
+# @author: A. Alonso Dominguez
 class WasBooleanDataType(WasDataType):
 	TYPENAME = 'boolean'
 
+	##
+	# Initializes the boolean data type
 	def __init__(self):
 		WasDataType.__init__(self, WasBooleanDataType.TYPENAME)
 	
+	##
+	# Transforms any string received into a python boolean (int)
+	# @param value: any string
+	# @return: a python boolean (int)
 	def from_str(self, value):
 		if (value == '') or (value is None): return 0
-		return (value == 'true') or (value == 'True') or (value == 'TRUE') or (value == '1')
+		return ((value == 'true') or (value == 'True') or (value == 'TRUE') or (value == '1'))
 	
+	##
+	# Transforms a python boolean (a int) into a boolean string
+	# @param value: a python boolean
 	def to_str(self, value):
 		if value: return 'true'
 		else:     return 'false'
 
+##
+#
+# @author: A. Alonso Dominguez
 class WasIntegerDataType(WasDataType):
 	TYPENAME = 'Integer'
 	
@@ -96,6 +155,9 @@ class WasIntegerDataType(WasDataType):
 		if value is None: return ''
 		return '%i' % value
 
+##
+#
+# @author: A. Alonso Dominguez
 class WasStringDataType(WasDataType):
 	TYPENAME = 'String'
 	
@@ -112,6 +174,9 @@ class WasStringDataType(WasDataType):
 		if value is None: return ''
 		return '"' + str(value) + '"'
 
+##
+#
+# @author: A. Alonso Dominguez
 class WasObjectDataType(WasDataType):
 	
 	def __init__(self, typename, klass):
@@ -125,12 +190,6 @@ class WasObjectDataType(WasDataType):
 	def to_str(self, value):
 		if value is None: return ''
 		return self.klass.__getconfigid__(value)
-
-WAS_DATATYPES = {
-	WasBooleanDataType.TYPENAME : WasBooleanDataType(),
-	WasIntegerDataType.TYPENAME : WasIntegerDataType(),
-	WasStringDataType.TYPENAME  : WasStringDataType()
-}
 
 ########################################################################
 ##                      WebSphere metaclasses                         ##
@@ -263,6 +322,9 @@ class WasObjectClass:
 		
 		return inst
 
+##
+# Base WAS object class which should be used as the
+# primary super class for any WAS instance
 WasObject = WasObjectClass('WasObject')
 
 class ChainedMethodInvoker:
@@ -278,8 +340,16 @@ class ChainedMethodInvoker:
 		return retval
 
 ########################################################################
-##                      WebSphere utilities                           ##
+##                      Utility functions                             ##
 ########################################################################
+
+##
+# Data type map used internally for resolving WebSphere types
+__WAS_DATATYPES__ = {
+	WasBooleanDataType.TYPENAME : WasBooleanDataType(),
+	WasIntegerDataType.TYPENAME : WasIntegerDataType(),
+	WasStringDataType.TYPENAME  : WasStringDataType()
+}
 
 def was_getconfigid(id):
 	if id is None: return None
@@ -300,8 +370,8 @@ def was_type(typename):
 	if typename.endswith('*'):
 		typename = typename[0:-1]
 		return WasArrayDataType(was_type(typename))
-	elif WAS_DATATYPES.has_key(typename):
-		return WAS_DATATYPES[typename]
+	elif __WAS_DATATYPES__.has_key(typename):
+		return __WAS_DATATYPES__[typename]
 	else:
 		if not WasObjectClass.__OBJ_TYPES__.has_key(typename):
 			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
