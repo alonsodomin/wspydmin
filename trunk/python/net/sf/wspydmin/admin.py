@@ -1,19 +1,19 @@
-## WSPydmin - WebSphere Python Administration Library
-## Copyright (C) 2010  Antonio Alonso Domínguez
-##
-## This program is free software: you can redistribute it and/or modify
-## it under the terms of the GNU General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## This program is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU General Public License for more details.
-##
-## You should have received a copy of the GNU General Public License
-## along with this program.  If not, see <http://www.gnu.org/licenses/>.
-##
+# WSPydmin - WebSphere Python Administration Library
+# Copyright (C) 2010  Antonio Alonso Domínguez
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 import logging
 
@@ -21,7 +21,8 @@ from java.lang                   import IllegalArgumentException, IllegalStateEx
 
 from net.sf.wspydmin             import AdminConfig, AdminControl, AdminTask
 from net.sf.wspydmin.utils       import *
-from net.sf.wspydmin.resources   import Resource, MBean
+from net.sf.wspydmin.resources   import Resource
+from net.sf.wspydmin.mbean       import MBean, ResourceMBean 
 from net.sf.wspydmin.listener    import MessageListenerService
 from net.sf.wspydmin.orb         import ObjectRequestBroker
 from net.sf.wspydmin.web         import WebContainer
@@ -168,14 +169,13 @@ class Cluster(MBean):
 	def __getmbeanid__(self):
 		return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.parent.name, self.name))
 
-class Server(MBean):
+class Server(ResourceMBean):
 	DEF_SCOPE = '/Node:%(nodeName)s/'
 	DEF_ID    = '%(scope)sServer:%(serverName)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {}
 	
 	def __init__(self, serverId):
-		MBean.__init__(self)
+		ResourceMBean.__init__(self)
 		self.serverId   = serverId
 		self.nodeName   = serverId.split('nodes/')[1].split('/servers')[0]
 		self.serverName = getServerName(serverId)
