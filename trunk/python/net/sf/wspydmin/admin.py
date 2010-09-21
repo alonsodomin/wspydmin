@@ -33,6 +33,12 @@ class Cell(Resource):
 	def __init__(self, name = AdminControl.getCell()):
 		self.name   = name
 
+	def __create__(self, update):
+		raise NotImplementedError, "Can't create or update a cell by this call"
+
+	def __remove__(self, deep):
+		raise NotImplementedError, "Can't remove a cell by this call"
+
 	def __getconfigid__(self):
 		return AdminConfig.getid(self.__id__)
 

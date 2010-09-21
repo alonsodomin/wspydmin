@@ -24,13 +24,15 @@ from com.ibm.websphere.management.exception        import AdminException
 from com.ibm.ws.scripting                          import ScriptingException
 
 from net.sf.wspydmin                               import AdminConfig, AdminControl
+from net.sf.wspydmin.admin                         import Cell
+from net.sf.wspydmin.adapters                      import J2CResourceAdapter  
 from net.sf.wspydmin.pool                          import ConnectionPool
 from net.sf.wspydmin.resources                     import Resource
 from net.sf.wspydmin.security                      import JAASAuthData
 from net.sf.wspydmin.properties                    import J2EEPropertySetResource
 
 class CMPConnectorFactory(Resource):
-	DEF_SCOPE = '/Cell:%s/J2CResourceAdapter:WebSphere Relational Resource Adapter/' % AdminControl.getCell()
+	DEF_SCOPE = None
 	DEF_ID    = '%(scope)sCMPConnectorFactory:%(name)s/'
 	DEF_TPL   = None
 	DEF_ATTRS = {
@@ -47,9 +49,12 @@ class CMPConnectorFactory(Resource):
                            'provider' : None
 	}
 
+	__J2C_RESOURCE_ADAPTER_NAME__ = 'WebSphere Relational Resource Adapter'
+
 	def __init__(self, name):
 		Resource.__init__(self)
 		self.name = name
+		self.parent = J2CResourceAdapter(CMPConnectorFactory.__J2C_RESOURCE_ADAPTER_NAME__)
 
 	def __postinit__(self):
 		Resource.__postinit__(self)
@@ -57,7 +62,7 @@ class CMPConnectorFactory(Resource):
 			self.provider = AdminConfig.getid(self.__scope__)
 
 class JDBCProvider(Resource):
-	DEF_SCOPE = '/Cell:%s' % AdminControl.getCell()
+	DEF_SCOPE = None
 	DEF_ID    = '%(scope)s/JDBCProvider:%(name)s/'
 	DEF_TPL   = None
 	DEF_ATTRS = {
@@ -70,9 +75,10 @@ class JDBCProvider(Resource):
                     'description' : None
 	}
 	
-	def __init__(self, name):
+	def __init__(self, name, parent = Cell()):
 		Resource.__init__(self)
-		self.name = name
+		self.name   = name
+		self.parent = parent
 
 class DataSource(J2EEPropertySetResource):
 	DEF_ID    = '%(scope)sDataSource:%(name)s'

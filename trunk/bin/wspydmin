@@ -31,16 +31,16 @@ EOF
 PRG="$0"
 
 while [ -h "${PRG}" ]; do
-	ls=`ls -ld "${PRG}"`
-	link=`expr "${ls}" : '.*->\(.*\)$'`
+	ls=$(ls -ld "${PRG}")
+	link=$(expr "${ls}" : '.*->\(.*\)$')
 	if expr "${link}" : '/.*' > /dev/null; then
 		PRG="${link}"
 	else
-		PRG=`dirname "${PRG}"`/"${link}"
+		PRG=$(dirname "${PRG}")/"${link}"
 	fi
 done
 
-WSPYDMIN_HOME=`dirname ${PRG}`
+WSPYDMIN_HOME=$(dirname ${PRG})
 WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
 WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
 WSPYDMIN_INCLUDE="${WSPYMIN_HOME}/include"
@@ -49,9 +49,11 @@ if [ ! -f "${WSPYDMIN_CONF}" ]; then
 	echo "ERROR: Configuration file '${WSPYDMIN_CONF}' not found"
 	exit 1
 fi
-
 source ${WSPYDMIN_CONF}
 
+#
+# Check environment configuration
+#
 if [ -z "${WAS_HOME}" ]; then
 	echo "ERROR: Configuration variable WAS_HOME was not set."
 	exit 1
@@ -74,13 +76,15 @@ export WSPYDMIN_HOME
 export WSPYDMIN_LIB
 export WSPYDMIN_INCLUDE
 
+#
+# Parse command line arguments to override defaults
+#
 WSADMIN_ARGS="-lang jython -profile ${WSPYMIN_LIB}/wasprofile.py"
 WSADMIN_CLASSPATH=
 
 SCRIPT_ARGS=
 SCRIPT_NAME=
 
-# Parse command line arguments to override defaults
 while [ ! -z "$1" ]; do
 	case "$1" in
 		"-lang")
@@ -92,7 +96,7 @@ while [ ! -z "$1" ]; do
 			;;
 		"-profile")
 			shift
-			echo "ERROR: Aggregation of profile scripts is not supported"
+			echo "ERROR: An alternative profile script is not supported"
 			exit 1
 			;;
 		"-username")
@@ -146,13 +150,27 @@ if [ ! -z "${WAS_DEFAULT_PROFILE}" ]; then
 	WSADMIN_ARGS="${WSADMIN_ARGS} -profileName ${WAS_DEFAULT_PROFILE}"
 fi
 
-# End of parameter parsing
+#
+# Invoke wsadmin.sh either interactively or silently
+#
 
+# Fill wsadmin.sh classpath
 for f in "${WSPYDMIN_INCLUDE}/java/*.jar"; do
-	WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
+    if [ "${WSADMIN_CLASSPATH}" == "" ]; then
+        WSADMIN_CLASSPATH=$f
+    else
+        WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
+    fi
 done
 
-# Invoke wsadmin.sh either interactively or silently
+# Normalize script pathname
+SCRIPT_NAME=$(readlink -n -f ${SCRIPT_NAME})
+SCRIPT_HOME=$(dirname ${SCRIPT_NAME})
+
+if [ ! -z "${SCRIPT_HOME}" ]; then
+    export SCRIPT_HOME
+fi
+
 if [ -z "${SCRIPT_NAME}" ]; then
 	echo $DISCLAIMER
 	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} ${SCRIPT_ARGS}

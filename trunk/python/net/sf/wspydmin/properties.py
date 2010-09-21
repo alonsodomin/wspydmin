@@ -33,7 +33,7 @@ class J2EEPropertySetResource(Resource):
 	def __create__(self, update):
 		Resource.__create__(self, update)
 		self.__propertySet__.update()
-	
+		
 	def __dumpattrs__(self):
 		str = Resource.__dumpattrs__(self)
 		if hasattr(self, '__propertySet__'):
@@ -57,7 +57,7 @@ class J2EEPropertySetResource(Resource):
 			if self.__defaults__.has_key(name):
 				self.setProperty(name, value)
 			else:
-				Resource.__setattr_(self, name, value)
+				Resource.__setattr__(self, name, value)
 	
 	def getProperty(self, name):
 		if not self.__defaults__.has_key(name):
@@ -167,7 +167,6 @@ class J2EEResourceProperty(Resource):
 	def set(self, name, value):
 		self.name = name
 		self.value = value
-		self.__hydrate__()
 
 class J2EEResourcePropertySet(Resource):
 	DEF_SCOPE = None # Provided

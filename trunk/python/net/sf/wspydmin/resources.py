@@ -17,6 +17,7 @@
 
 import re, copy
 
+from java.lang            import IllegalStateException
 from com.ibm.ws.scripting import ScriptingException
 
 from net.sf.wspydmin      import AdminConfig, AdminControl
@@ -156,16 +157,19 @@ class Resource(WasObject):
 	def __hydrate__(self):
 		mydict = {}
 		map(
-			lambda x: (mydict[x]=self.__attrmap__[x]),
+			lambda x: mydict.__setitem__(x, self.__attrmap__[x]),
 			filter(
-				lambda x: return (not x.startswith('__') and not x.endswith('__'),
+				lambda x: (not x.startswith('__') and not x.endswith('__')),
 				self.__attrmap__.keys()
 			)
 		)
 		
 		if (self.__scope__ is None):
 			if hasattr(self, 'parent'):
-				self.__scope__ = getattr(self, 'parent').__id__
+				parent = getattr('parent')
+				if not hasattr(parent, '__id__'):
+					raise IllegalStateException, "'parent' attribute must be a hydrated Resource"
+				self.__scope__ = parent.__id__
 			else:
 				self.__scope__ = AdminControl.getCell()
 		elif not (Resource.__DEF_PATTERN__.search(self.__scope__) is None):
