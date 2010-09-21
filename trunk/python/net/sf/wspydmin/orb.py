@@ -20,7 +20,6 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.tunning    import ThreadPool
 
 class ObjectRequestBroker(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/ObjectRequestBroker:/'
 	DEF_ATTRS = {
               'commTraceEnabled' : 'false',

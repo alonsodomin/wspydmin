@@ -70,6 +70,7 @@ class J2EEPropertySetResource(Resource):
 		self.__propertySet__.addProperty(name, value)
 
 class PropertySetResource(Resource):
+	
 	def __init__(self):
 		Resource.__init__(self)
 		self.__properties__ = {}
@@ -120,9 +121,7 @@ class PropertySetResource(Resource):
 		self.__properties__[name].value = value
 
 class Property(Resource):
-	DEF_SCOPE = None # Provided
 	DEF_ID    = '%(scope)sProperty:%(name)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
                         'name' : None,
                        'value' : None,
@@ -143,9 +142,7 @@ class Property(Resource):
 		return None
 
 class J2EEResourceProperty(Resource):
-	DEF_SCOPE = None # Provided
 	DEF_ID    = '%(scope)sJ2EEResourceProperty:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
              'name' : None,
              'type' : None,
@@ -169,9 +166,7 @@ class J2EEResourceProperty(Resource):
 		self.value = value
 
 class J2EEResourcePropertySet(Resource):
-	DEF_SCOPE = None # Provided
 	DEF_ID    = '%(scope)sJ2EEResourcePropertySet:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {}
 
 	def __init__(self, parent):

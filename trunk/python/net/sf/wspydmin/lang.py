@@ -81,6 +81,21 @@ class WasBooleanDataType(WasDataType):
 		if value: return 'true'
 		else:     return 'false'
 
+class WasIntegerDataType(WasDataType):
+	TYPENAME = 'Integer'
+	
+	def __init__(self):
+		WasDataType.__init__(self, WasIntegerDataType.TYPENAME)
+	
+	def from_str(self, value):
+		if (value == '') or (value is None): 
+			return None
+		return int(value)
+	
+	def to_str(self, value):
+		if value is None: return ''
+		return '%i' % value
+
 class WasStringDataType(WasDataType):
 	TYPENAME = 'String'
 	
@@ -113,6 +128,7 @@ class WasObjectDataType(WasDataType):
 
 WAS_DATATYPES = {
 	WasBooleanDataType.TYPENAME : WasBooleanDataType(),
+	WasIntegerDataType.TYPENAME : WasIntegerDataType(),
 	WasStringDataType.TYPENAME  : WasStringDataType()
 }
 
@@ -181,6 +197,7 @@ class WasObjectHelper:
 			except (KeyError, AttributeError):
 				return self.__missedattr__(name)
 			return ga(self, name)
+		
 		if type(raw) != types.FunctionType:
 			return raw
 		return self.__methodwrapper__(raw, self)

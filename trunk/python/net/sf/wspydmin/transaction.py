@@ -19,7 +19,6 @@ from net.sf.wspydmin            import AdminConfig, AdminControl
 from net.sf.wspydmin.resources  import Resource
 
 class TransactionService(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/TransactionService:/'
 	DEF_ATTRS = {
                 'LPSHeuristicCompletion' : 'ROLLBACK',

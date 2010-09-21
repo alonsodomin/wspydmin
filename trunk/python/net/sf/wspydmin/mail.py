@@ -16,12 +16,22 @@
 ##
 
 from net.sf.wspydmin            import AdminConfig, AdminControl
+from net.sf.wspydmin.admin      import Cell
 from net.sf.wspydmin.resources  import Resource
 
+class MailProvider(Resource):
+	DEF_ID = '%(scope)sMailProvider:%(name)s/'
+	DEF_ATTRS = {
+                    'name' : None,
+	}
+	
+	def __init__(self, name, parent = Cell()):
+		Resource.__init__(self)
+		self.name   = name
+		self.parent = parent
+
 class MailSession(Resource):
-	DEF_SCOPE = '/Cell:%s/MailProvider:Built-in Mail Provider/' % AdminControl.getCell()
-	DEF_ID    = '/MailSession:%(name)s/'
-	DEF_TPL   = None
+	DEF_ID    = '%(scope)sMailSession:%(name)s/'
 	DEF_ATTRS = {
                     'name' : None,
                 'jndiName' : None,
@@ -32,4 +42,5 @@ class MailSession(Resource):
 	def __init__(self, name):
 		self.__super__()
 		self.name = name
+		self.parent = MailProvider('Built-in Mail Provider')
 

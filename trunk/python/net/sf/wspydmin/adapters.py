@@ -23,13 +23,12 @@ from net.sf.wspydmin                        import Cell
 from net.sf.wspydmin.resources              import Resource
 
 class J2CResourceAdapter(Resource):
-    DEF_SCOPE = None
     DEF_ID    = '%(scope)sJ2CResourceAdapter:%(name)s/'
     DEF_ATTRS = {
                  'name' : None
     }
     
-    def __init__(self, name, parent = Cell()):
+    def __init__(self, name):
         Resource.__init__(self)
         self.name   = name
-        self.parent = parent
+        self.parent = Cell()

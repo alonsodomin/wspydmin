@@ -113,7 +113,6 @@ class Cell(Resource):
 		return AdminConfig.list('LibraryRef', self.__id__).splitlines()
 
 class VirtualHost(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/VirtualHost:/'
 	DEF_ATTRS = {}
 	

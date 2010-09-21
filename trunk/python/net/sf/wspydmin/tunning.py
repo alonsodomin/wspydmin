@@ -19,9 +19,7 @@ from net.sf.wspydmin           import AdminConfig
 from net.sf.wspydmin.resources import Resource
 
 class TunningParams(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/TuningParams:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
                 "allowOverflow" : "false",
          "invalidationSchedule" : None,
@@ -42,9 +40,7 @@ class TunningParams(Resource):
 		return AdminConfig.list(self.__type__, self.parent.__getconfigid__())
 
 class SessionManager(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/SessionManager:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
             "accessSessionOnTimeout" : "true",
       "allowSerializedSessionAccess" : "false",
@@ -66,7 +62,8 @@ class SessionManager(Resource):
 	def __init__(self, parent):
 		Resource.__init__(self)
 		self.parent      = parent
-		self.__tunning__ = TunningParams(self.parent)
+		#self.__tunning__ = TunningParams(self.parent)
+		self.__tunning__ = TunningParams(self)
 
 	def __postinit__(self):
 		Resource.__postinit__(self)
@@ -88,9 +85,7 @@ class SessionManager(Resource):
 			Resource.__setattr__(self, name, value)
 
 class ThreadPool(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/ThreadPool:%(name)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
       "customProperties" : None,
      "inactivityTimeout" : None,
