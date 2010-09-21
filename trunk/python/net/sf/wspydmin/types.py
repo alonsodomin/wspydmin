@@ -26,51 +26,58 @@ from java.lang import IllegalArgumentException
 class WasDataTypeError(Exception):
 	pass
 
-##
-# Abstract representation of a WebSphere type.
-# A WebSphere type is any primitive or object supported by
-# the WebSphere Application Server
-#
-# @author: A. Alonso Dominguez
 class WasDataType:
+	"""
+	Abstract representation of a WebSphere type.
+	A WebSphere type is any primitive or object supported by
+	the WebSphere Application Server
 	
-	##
-	# Initializes the type
-	# @param typename: name of this type 
+	@author: A. Alonso Dominguez
+	"""
+	
 	def __init__(self, typename):
+		"""
+		Initializes the type
+		@param typename: name of this type 
+		"""
 		if (typename is None) or (typename == ''):
 			raise IllegalArgumentException, "A typename must be specified"
 		self.typename = typename
 	
-	##
-	# Transforms a string into a python valid value
-	# @param value: a string value
-	# @return: nothing
 	def from_str(self, value):
+		"""
+		Transforms a string into a python valid value
+		@param value: a string value
+		@return: nothing
+		"""
 		pass
 	
-	##
-	# Transforms any value into a string
-	# @param value: any value
-	# @return: nothing
 	def to_str(self, value):
+		"""
+		Transforms any value into a string
+		@param value: any value
+		@return: nothing
+		"""
 		pass
 	
-	##
-	# Offers a string representation of this type
 	def __str__(self):
+		"""
+		Offers a string representation of this type
+		"""
 		return self.typename
 
-##
-# Typed array implementation
-#
-# @author: A. Alonso Dominguez
 class WasArrayDataType(WasDataType):
+	"""
+	Typed array implementation
 	
-	##
-	# Initializes the array type
-	# @param elemType: WasDataType for the elements of this array type
+	@author: A. Alonso Dominguez
+	"""
+	
 	def __init__(self, element_type):
+		"""
+		Initializes the array type
+		@param elemType: WasDataType for the elements of this array type
+		"""
 		if element_type is None:
 			raise IllegalArgumentException, "element type can't be null"
 		if not hasattr(element_type, 'typename'):
@@ -83,11 +90,12 @@ class WasArrayDataType(WasDataType):
 		WasDataType.__init__(self, element_typename + '*')
 		self.element_type = element_type
 	
-	##
-	# Transforms a string into an array of values
-	# @param value: any string
-	# @return: a python list containing the elements listed in the string
 	def from_str(self, value):
+		"""
+		Transforms a string into an array of values
+		@param value: any string
+		@return: a python list containing the elements listed in the string
+		"""
 		if (value == '') or (value is None): return None
 		obj = []
 		if value.startswith('[') and value.endswith(']'):
@@ -97,11 +105,12 @@ class WasArrayDataType(WasDataType):
 			obj.append(self.element_type.from_str(elem))
 		return obj
 
-	##
-	# Transforms a python list into a string which represents the array data
-	# @param value: a python list
-	# @return: a string representing the array data	
 	def to_str(self, value):
+		"""
+		Transforms a python list into a string which represents the array data
+		@param value: a python list
+		@return: a string representing the array data	
+		"""
 		if value is None: return ''
 		str = '['
 		if type([]) == type(value):
@@ -115,37 +124,42 @@ class WasArrayDataType(WasDataType):
 		str = str + ']'
 		return str
 
-##
-# Boolean data types handler
-#
-# @author: A. Alonso Dominguez
 class WasBooleanDataType(WasDataType):
+	"""
+	Boolean data types handler
+	
+	@author: A. Alonso Dominguez
+	"""
 	TYPENAME = 'boolean'
 
-	##
-	# Initializes the boolean data type
 	def __init__(self):
+		"""
+		Initializes the boolean data type
+		"""
 		WasDataType.__init__(self, WasBooleanDataType.TYPENAME)
 	
-	##
-	# Transforms any string received into a python boolean (int)
-	# @param value: any string
-	# @return: a python boolean (int)
 	def from_str(self, value):
+		"""
+		Transforms any string received into a python boolean (int)
+		@param value: any string
+		@return: a python boolean (int)
+		"""
 		if (value == '') or (value is None): return 0
 		return ((value == 'true') or (value == 'True') or (value == 'TRUE') or (value == '1'))
 	
-	##
-	# Transforms a python boolean (a int) into a boolean string
-	# @param value: a python boolean
 	def to_str(self, value):
+		"""
+		Transforms a python boolean (a int) into a boolean string
+		@param value: a python boolean
+		"""
 		if value: return 'true'
 		else:     return 'false'
 
-##
-#
-# @author: A. Alonso Dominguez
 class WasIntegerDataType(WasDataType):
+	"""
+	
+	@author: A. Alonso Dominguez
+	"""
 	TYPENAME = 'Integer'
 	
 	def __init__(self):
@@ -160,10 +174,11 @@ class WasIntegerDataType(WasDataType):
 		if value is None: return ''
 		return '%i' % value
 
-##
-#
-# @author: A. Alonso Dominguez
 class WasStringDataType(WasDataType):
+	"""
+	
+	@author: A. Alonso Dominguez
+	"""
 	TYPENAME = 'String'
 	
 	def __init__(self):
@@ -179,10 +194,11 @@ class WasStringDataType(WasDataType):
 		if value is None: return ''
 		return '"' + str(value) + '"'
 
-##
-#
-# @author: A. Alonso Dominguez
 class WasObjectDataType(WasDataType):
+	"""
+	
+	@author: A. Alonso Dominguez
+	"""
 	
 	def __init__(self, klass):
 		WasDataType.__init__(self, klass.__name__)
@@ -197,9 +213,10 @@ class WasObjectDataType(WasDataType):
 		return self.klass.__getconfigid__(value)
 
 
-##
-# Data type map used internally for resolving WebSphere types
 __WAS_DATATYPES = {
+	"""
+	Data type map used internally for resolving WebSphere types
+	"""
 	WasBooleanDataType.TYPENAME : WasBooleanDataType(),
 	WasIntegerDataType.TYPENAME : WasIntegerDataType(),
 	WasStringDataType.TYPENAME  : WasStringDataType()
