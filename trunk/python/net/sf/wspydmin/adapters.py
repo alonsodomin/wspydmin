@@ -22,13 +22,3 @@ from net.sf.wspydmin                        import AdminConfig, AdminControl
 from net.sf.wspydmin                        import Cell   
 from net.sf.wspydmin.resources              import Resource
 
-class J2CResourceAdapter(Resource):
-    DEF_ID    = '%(scope)sJ2CResourceAdapter:%(name)s/'
-    DEF_ATTRS = {
-                 'name' : None
-    }
-    
-    def __init__(self, name):
-        Resource.__init__(self)
-        self.name   = name
-        self.parent = Cell()

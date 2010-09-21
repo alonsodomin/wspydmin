@@ -136,8 +136,8 @@ class Property(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self):
-		for pid in AdminConfig.list(Property.__type__, self.parent.__getconfigid__()).splitlines():
-			if pid.startswith(self.__attrmap__['name']):
+		for pid in AdminConfig.list(Property.__wastype__, self.parent.__getconfigid__()).splitlines():
+			if pid.startswith(self.__wasattrmap__['name']):
 				return pid
 		return None
 
@@ -157,7 +157,7 @@ class J2EEResourceProperty(Resource):
 	
 	def __getconfigid__(self):
 		for p in AdminConfig.getid(self.__id__).splitlines():
-			if self.__attrmap__['name'] == p.split('(')[0]:
+			if self.__wasattrmap__['name'] == p.split('(')[0]:
 				return p
 		return None
 

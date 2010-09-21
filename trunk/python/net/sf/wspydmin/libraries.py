@@ -79,7 +79,7 @@ class Library(Resource):
 				lambda x: x.split('(')[0].split(Library.__NAMEPREFIX__)[1], # get library name from ID 
 				filter( 
 					lambda x: x.startswith(Library.__NAMEPREFIX__), # get only custom libraries
-					AdminConfig.list(self.__type__).splitlines()
+					AdminConfig.list(self.__wastype__).splitlines()
 				)
 			)
 		)
@@ -92,7 +92,7 @@ class LibraryRef(Resource):
 	}
 	
 	def __init__(self, library, targetResourceName):
-		self.__super__(self)
+		self.__wassuper__(self)
 		self.libraryName        = library.name
 		self.targetResourceName = targetResourceName
 		
@@ -102,12 +102,12 @@ class LibraryRef(Resource):
 		self.parent = ClassLoader(targetResourceName)
 	
 	def __postinit__(self):	
-		self.__super__.__postinit__()
+		self.__wassuper__.__postinit__()
 		if (self.__scope__ is None):   # <-- scope = parent.__id__
 			raise IllegalStateException, 'Cannot create a library Ref on a (server or application) that does not exist'
 	
 	def __getconfigid__(self):
-		for librefId in AdminConfig.list(self.__type__).splitlines():
+		for librefId in AdminConfig.list(self.__wastype__).splitlines():
 			libName = AdminConfig.showAttribute(librefId, 'libraryName')
 			if (libName == self.libraryName and librefId.find(self.targetResourceName)!=-1 ):
 				return librefId

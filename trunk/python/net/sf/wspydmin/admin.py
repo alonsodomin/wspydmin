@@ -31,7 +31,10 @@ from net.sf.wspydmin.vars        import VariableSubstitutionEntry
 from net.sf.wspydmin.jvm         import JavaVirtualMachine
 
 class Cell(Resource):
-	DEF_ID = '/Cell:%(name)s/'
+	DEF_ID    = '/Cell:%(name)s/'
+	DEF_ATTRS = {
+		'name' : None
+	}
 	
 	def __init__(self, name = AdminControl.getCell()):
 		self.name   = name
@@ -122,7 +125,7 @@ class VirtualHost(Resource):
 	def __init__(self, virtualHostName):
 		self.virtualHostName = virtualHostName
 		
-	def __getconfigid__(self, id = None):
+ 	def __getconfigid__(self):
 		id = None
 		virtualHosts = AdminConfig.list('VirtualHost').splitlines()
 		for virtualHostId in virtualHosts:
@@ -151,34 +154,42 @@ class VirtualHost(Resource):
 		for hostAliasId in self.getHostAliasIds():
 			AdminConfig.remove(hostAliasId)
 	
-class Cluster(MBean):
-	def __init__(self, name, parent = Cell()):
-		self.name   = name
-		self.parent = parent
+class Cluster(ResourceMBean):
+	__parent_attrname__ = 'cell'
+	
+	DEF_ID    = '%(scope)sCluster:%(name)s/'
+	DEF_ATTRS = {
+		'name' : None
+	}
+	
+	def __init__(self, name, cell = Cell()):
+		self.name = name
+		self.cell = cell
 		
-		self.id = None
+	def __postinit__(self):
 		clusters = AdminConfig.list('ServerCluster').splitlines()
 		for clusterId in clusters:
 			clusterName = getClusterName(clusterId)
 			if clusterName == self.name:
-				self.id = clusterId
+				self.clusterId = clusterId
 		
-		if (self.id is None):
-			raise IllegalArgumentException, "No cluster '%s' was found in cell '%s'" % (self.name, AdminControl.getCell())
+		if (self.clusterId is None):
+			raise IllegalArgumentException, "No cluster '%s' was found in cell '%s'" % (self.name, self.cell.name)
 	
 	def __getmbeanid__(self):
-		return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.parent.name, self.name))
+		return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.cell.name, self.name))
 
 class Server(ResourceMBean):
-	DEF_SCOPE = '/Node:%(nodeName)s/'
+	DEF_SCOPE = '%(parent)sNode:%(nodeName)s/'
 	DEF_ID    = '%(scope)sServer:%(serverName)s/'
 	DEF_ATTRS = {}
 	
-	def __init__(self, serverId):
+	def __init__(self, serverId, parent = Cell()):
 		ResourceMBean.__init__(self)
 		self.serverId   = serverId
 		self.nodeName   = serverId.split('nodes/')[1].split('/servers')[0]
 		self.serverName = getServerName(serverId)
+		self.parent     = parent
 	
 	def addApplicationFirstClassLoader(self):
 		classLoaderIds = AdminConfig.list('Classloader',self.__getconfigid__()).splitlines()
@@ -248,8 +259,8 @@ class Server(ResourceMBean):
 		pass
 
 class NodeAgent(Server):
-	def __init__(self, serverId):
-		Server.__init__(self, serverId)
+	def __init__(self, serverId, parent = Cell()):
+		Server.__init__(self, serverId, parent)
 		#self.nodeName = getNodeName(serverId)
 
 	def __getmbeanid__(self):

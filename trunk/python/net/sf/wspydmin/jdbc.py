@@ -17,7 +17,7 @@
 
 import sys, traceback, copy
 
-from java.lang                                     import Exception
+from java.lang                                     import IllegalArgumentException
 from javax.management                              import MBeanException
 
 from com.ibm.websphere.management.exception        import AdminException
@@ -25,11 +25,28 @@ from com.ibm.ws.scripting                          import ScriptingException
 
 from net.sf.wspydmin                               import AdminConfig, AdminControl
 from net.sf.wspydmin.admin                         import Cell
-from net.sf.wspydmin.adapters                      import J2CResourceAdapter  
 from net.sf.wspydmin.pool                          import ConnectionPool
 from net.sf.wspydmin.resources                     import Resource
 from net.sf.wspydmin.security                      import JAASAuthData
 from net.sf.wspydmin.properties                    import J2EEPropertySetResource
+
+class J2CResourceAdapter(Resource):
+    DEF_ID    = '%(scope)sJ2CResourceAdapter:%(name)s/'
+    DEF_ATTRS = {
+                 'name' : None
+    }
+    
+    def __init__(self, name):
+        Resource.__init__(self)
+        self.name   = name
+        self.parent = Cell()
+
+
+class J2CRelationalResourceAdapter(J2CResourceAdapter):
+	RESOURCE_ADAPTER_NAME = 'WebSphere Relational Resource Adapter'
+	
+	def __init__(self):
+		J2CResourceAdapter.__init__(self, J2CRelationalResourceAdapter.RESOURCE_ADAPTER_NAME)
 
 class CMPConnectorFactory(Resource):
 	DEF_ID    = '%(scope)sCMPConnectorFactory:%(name)s/'
@@ -47,12 +64,10 @@ class CMPConnectorFactory(Resource):
                            'provider' : None
 	}
 
-	J2C_RESOURCE_ADAPTER_NAME = 'WebSphere Relational Resource Adapter'
-
 	def __init__(self, name):
 		Resource.__init__(self)
 		self.name   = name
-		self.parent = J2CResourceAdapter(CMPConnectorFactory.J2C_RESOURCE_ADAPTER_NAME)
+		self.parent = J2CRelationalResourceAdapter()
 
 	def __postinit__(self):
 		Resource.__postinit__(self)
@@ -77,6 +92,8 @@ class JDBCProvider(Resource):
 		self.parent = parent
 
 class DataSource(J2EEPropertySetResource):
+	__parent_attrname__ = 'provider'
+	
 	DEF_ID    = '%(scope)sDataSource:%(name)s'
 	DEF_ATTRS = {
 		   'authDataAlias' : None,
@@ -88,14 +105,16 @@ class DataSource(J2EEPropertySetResource):
 	AUTH_DATA_ALIAS = 'JDBC_%(userId)s_%(name)s'
 	
 	def __init__(self, provider):
+		if provider is None:
+			raise IllegalArgumentException, 'A provider must be given'
+		
 		J2EEPropertySetResource.__init__(self)
 		self.__auth__     = None
 		self.__iscmp__    = None
 		self.__cmpcf__    = None
 		
-		self.parent       = provider
-		self.provider     = self.parent.__getconfigid__()
-		self.providerType = self.parent.providerType
+		self.provider     = provider
+		self.providerType = provider.providerType
 	
 	def __create__(self, update):
 		#1.- Configure Auth Data       
@@ -114,7 +133,7 @@ class DataSource(J2EEPropertySetResource):
 		
 		#4.- Configure CMP Factory if needed
 		if not (self.__iscmp__ is None):
-			self.__cmpcf__.authDataAlias = alias
+			self.__cmpcf__.authDataAlias = self.authDataAlias
 			self.__cmpcf__.cmpDatasource = self.__getconfigid__()
 			if self.__iscmp__:
 				if not self.__cmpcf__.exists():
@@ -123,6 +142,12 @@ class DataSource(J2EEPropertySetResource):
 					self.__cmpcf__.update()
 			else:
 				self.__cmpcf__.remove()
+
+	def __loadattrs__(self):
+		Resource.__loadattrs__(self)
+		if not self.exists(): return
+		if not self.authDataAlias is None:
+			self.__auth__ = JAASAuthData(self.authDataAlias)
 
 	def getAuthData(self):
 		if (self.__auth__ is None) and (not self.authDataAlias is None):

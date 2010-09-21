@@ -17,7 +17,7 @@
 
 import copy
 
-from net.sf.wspydmin.lang      import *
+from net.sf.wspydmin.lang      import WasObjectHelper, WasObjectClass, WasObject
 from net.sf.wspydmin.resources import Resource
 
 class MBeanMethodInvoker:
@@ -40,10 +40,10 @@ class MBeanHelper(WasObjectHelper):
 
     def __getmbeanid__(self):
         if hasattr(self, 'name') and hasattr(self, 'nodeName') and hasattr(self, 'serverName'):
-            query = 'type=%s,name=%s,node=%s,process=%s,*' % (self.__type__, self.name, self.nodeName, self.serverName)
+            query = 'type=%s,name=%s,node=%s,process=%s,*' % (self.__wastype__, self.name, self.nodeName, self.serverName)
             return AdminControl.queryNames(query).splitlines()[0]
         else:
-            raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__klass__
+            raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__wasclass__
     
     def __missedattr__(self, name):
         if (self.__methods__.count(name) > 0):

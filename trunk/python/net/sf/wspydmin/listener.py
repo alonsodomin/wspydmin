@@ -46,10 +46,10 @@ class MessageListenerService(Resource):
 		def excludes(x): return not {'threadPool' : None, 'listenerPorts':None}.has_key(x[0])
 		if self.exists():
 			for name, value in filter(excludes, map(splitAttrs, AdminConfig.show(self.__getconfigid__()).splitlines())):
-				self.__attrmap__[name] = value
+				self.__wasattrmap__[name] = value
 	
 	def __getconfigid__(self):
-		id = AdminConfig.list(self.__type__, self.parent.__getconfigid__())
+		id = AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
 		if (id is None) or (id == ''):
 			return None
 		else:
@@ -114,7 +114,7 @@ class ListenerPort(DefaultMBean):
 			self.__statemng__.update()
 	
 	def __getconfigid__(self, id = None):
-		for lpid in AdminConfig.list(self.__type__, self.parent.__getconfigid__()).splitlines():
+		for lpid in AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines():
 			if lpid.startswith(self.name):
 				return lpid
 		return None
@@ -134,7 +134,7 @@ class StateManageable(Resource):
 		self.initialState = initialState
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__type__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def removeAll(self):
 		raise UnsupportedOperationException, "Use ListenerPort.removeAll() instead of StateManageable.removeAll()"

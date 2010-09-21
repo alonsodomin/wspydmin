@@ -32,7 +32,7 @@ class ClassLoader(Resource):
 	def __getconfigid__(self):
 		for targetName, id in map(
 			lambda x: [x.split('|')[0].split('/')[-1], x],
-			AdminConfig.list(self.__type__).splitlines()
+			AdminConfig.list(self.__wastype__).splitlines()
 		):
 			if targetName == self.targetResourceName:
 				return id

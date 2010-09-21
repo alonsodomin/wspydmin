@@ -24,11 +24,11 @@ from net.sf.wspydmin.utils     import getServerName, getNodeName
 class SIResource(Resource):
 	
 	def __getconfigid__(self):
-		raise NotImplementedError, "ERROR: %s.__getconfigid__() not implemented" % self.__type__
+		raise NotImplementedError, "ERROR: %s.__getconfigid__() not implemented" % self.__wastype__
 	
 	def __collectattrs__(self):
 		str = ''
-		for label, value in self.__attrmap__.items():
+		for label, value in self.__wasattrmap__.items():
 			if not value is None:
 				str = '%s -%s %s' % (str, label, value)
 		return str
