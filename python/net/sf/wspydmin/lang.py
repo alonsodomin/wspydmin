@@ -266,6 +266,8 @@ class ChainedMethodInvoker:
 ########################################################################
 
 def was_getconfigid(id):
+	if id is None: return None
+	
 	try:
 		obj = AdminConfig.getid(id).splitlines()[0]
 		if (obj is None) or (obj == ''):

@@ -33,6 +33,10 @@ if not wsPydminInclude is not None:
 		print "WSPydmin has included library found at '%s'" % include
 		sys.path.append(include)
 
+scriptHome = os.environ.get('SCRIPT_HOME')
+if not scriptHome is None:
+    sys.path.append(scriptHome)
+
 # Directly place references to each
 # WebSphere admin instance into
 # python's table of loaded modules.
