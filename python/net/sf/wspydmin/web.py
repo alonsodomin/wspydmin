@@ -32,7 +32,7 @@ class WebContainer(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__type__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def getSessionManager(self):
 		return SessionManager(self)

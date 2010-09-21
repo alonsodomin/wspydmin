@@ -51,7 +51,7 @@ class MQQueueConnectionFactory(Resource):
 	}
 	
 	def __init__(self, name):
-		self.__super__()
+		self.__wassuper__()
 		self.name   = name
 		self.parent = MQJMSProvider()
 		
@@ -77,6 +77,6 @@ class MQQueue(Resource):
 	}
 	
 	def __init__(self, name):
-		self.__super__()
+		self.__wassuper__()
 		self.name   = name
 		self.parent = MQJMSProvider()

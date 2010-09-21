@@ -40,7 +40,7 @@ class MailSession(Resource):
 	}
 	
 	def __init__(self, name):
-		self.__super__()
+		self.__wassuper__()
 		self.name = name
 		self.parent = MailProvider('Built-in Mail Provider')
 

@@ -54,7 +54,7 @@ class JavaVirtualMachine(Resource):
 			prop.__create__(update)
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__type__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
 		
 	def addGenericJvmArgument(self, genericJvmArgument):
 		newJvmArgName   = genericJvmArgument.split('=')[0]

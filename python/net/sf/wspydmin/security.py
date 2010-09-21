@@ -34,7 +34,7 @@ class JAASAuthData(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		for res in AdminConfig.list(self.__type__).splitlines():
+		for res in AdminConfig.list(self.__wastype__).splitlines():
 			if (not res is None) and (res != '') and (self.alias == AdminConfig.showAttribute(res, 'alias')):
 				return res
 		return None
@@ -63,7 +63,7 @@ class IIOPSecurityProtocol(Resource):
 	DEF_ID    = '/IIOPSecurityProtocol:/'
 	DEF_ATTRS = { }
 	
-	def __init__(self, wasid, parent):
+	def __init__(self, wasid, parent = Security()):
 		Resource.__init__(self)
 		self.__wasid__ = wasid
 		self.inbound   = self.getInboundConfiguration()
@@ -90,7 +90,7 @@ class IIOPSecurityProtocol(Resource):
 			self.performs = CommonSecureInterop(id, self)
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
 
 	def disableAuthentication(self):
 		self.inbound.disableAuthentication()
@@ -119,7 +119,7 @@ class CommonSecureInterop(Resource):
 		return self.__wasid__
 	
 	def __remove__(self, deep):
-		NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
+		NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
 	
 	def getMessageLayer(self):
 		id = filter(
@@ -160,24 +160,24 @@ class Layer(Resource):
 		self.parent    = parent
 		
 	def __getattr__(self, name):
-		if (name in Layer.DEF_ATTRS.keys()) and (self.__attrmap__[name] is None):
+		if (name in Layer.DEF_ATTRS.keys()) and (self.__wasattrmap__[name] is None):
 			obj = self.__getattrobj__(name)
-			self.__attrmap__[name] = obj
+			self.__wasattrmap__[name] = obj
 			return obj
 		else:
 			return Resource.__getattr__(self, name)
 	
 	def __getattrobj__(self, name):
-		raise NotImplementedError, "Provider an implementation for %s.getSupportedQOP()." % self.__type__
+		raise NotImplementedError, "Provider an implementation for %s.getSupportedQOP()." % self.__wastype__
 	
 	def __getconfigid__(self, id = None):
 		return self.__wasid__
 
 	def __create__(self, update):
-		raise NotImplementedError, "%s.create* method disabled for security reasons." % self.__type__
+		raise NotImplementedError, "%s.create* method disabled for security reasons." % self.__wastype__
 		
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
 
 class MessageLayer(Layer):
 
@@ -229,7 +229,7 @@ class MessageQOP(Resource):
 		return self.__wasid__
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
 
 class TransportQOP(Resource):
 	DEF_ID    = '/TransportQOP:/'
@@ -249,4 +249,4 @@ class TransportQOP(Resource):
 		return self.__wasid__
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__

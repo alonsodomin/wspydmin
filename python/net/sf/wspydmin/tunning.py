@@ -37,7 +37,7 @@ class TunningParams(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__type__, self.parent.__getconfigid__())
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
 
 class SessionManager(Resource):
 	DEF_ID    = '/SessionManager:/'
@@ -70,7 +70,7 @@ class SessionManager(Resource):
 		self.tunningParams = self.__tunning__.__getconfigid__()
 
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__type__, self.parent.__getconfigid__())
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
 
 	def __getattr__(self, name):
 		if (name == 'tunningParams'):
@@ -103,7 +103,7 @@ class ThreadPool(Resource):
 	
 	def __getconfigid__(self, id = None):
 		if self.instance is None:
-			for tp in AdminConfig.list(self.__type__, self.parent.__getconfigid__()).splitlines():
+			for tp in AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines():
 				if AdminConfig.showAttribute(tp, 'name') == self.name:
 					self.instance = tp
 					break

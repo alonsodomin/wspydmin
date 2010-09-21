@@ -17,18 +17,19 @@
 
 import re, copy, logging
 
-from java.lang            import IllegalStateException
-from com.ibm.ws.scripting import ScriptingException
+from java.lang             import IllegalStateException
+from com.ibm.ws.scripting  import ScriptingException
 
-from net.sf.wspydmin      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang import *
+from net.sf.wspydmin       import AdminConfig, AdminControl
+from net.sf.wspydmin.lang  import WasObject, was_getconfigid
+from net.sf.wspydmin.types import *
 
 class AbstractResourceError(Exception):
 	pass
 
 class Resource(WasObject):
-	__DEF_PATTERN__ = re.compile('\%\(\w+\)[s|i]')
-	__TEMPLATES__   = {}
+	__TEMPLATES         = {}
+	__parent_attrname__ = 'parent'
 	
 	ATTR_ID    = 'DEF_ID'
 	ATTR_SCOPE = 'DEF_SCOPE'
@@ -37,24 +38,23 @@ class Resource(WasObject):
 	
 	def __init__(self):
 		if not hasattr(self, Resource.ATTR_ID):
-			raise AbstractResourceError, self.__type__
+			raise AbstractResourceError, self.__wastype__
 
 		try:	
-			self.__attrmap__ = copy.copy(getattr(self, Resource.ATTR_ATTRS))
+			self.__wasattrmap__ = copy.copy(getattr(self, Resource.ATTR_ATTRS))
 		except AttributeError:
-			self.__attrmap__ = {}
+			self.__wasattrmap__ = {}
 		
 		# Container for attribute data types
-		self.__typemap__ = {}		
+		self.__wastypemap__ = {}		
 		
 	def __postinit__(self):
-		if self.__type__ is None: return
-		attrdef = AdminConfig.attributes(self.__type__)
+		attrdef = AdminConfig.attributes(self.__wastype__)
 		if (attrdef is not None) and (attrdef != ''):
 			for atype in attrdef.splitlines():
 				name = atype.split()[0]
 				value = atype.split()[1]			
-				self.__typemap__[name] = was_type(value)
+				self.__wastypemap__[name] = was_type(value)
 		
 		self.__hydrate__()
 		if self.exists():
@@ -67,110 +67,108 @@ class Resource(WasObject):
 		if self.exists():
 			if update:
 				id = self.__getconfigid__()
-				logging.debug("Updating resource '%s' under scope '%s' with attributes %s." % (self.__type__, id.split('/')[-1].split('|')[0], attributes))
+				logging.debug("Updating resource '%s' under scope '%s' with attributes %s." % (self.__wastype__, id.split('/')[-1].split('|')[0], attributes))
 				AdminConfig.modify(id, attributes)
 			else:
 				logging.warn("Resource already exists '%s'. NOT UPDATED!" % self.__id__)
 				return
 		else:
-			if self.__scope__.startswith('/'): #Weird! TO REFACTOR!
-				if hasattr(self, 'parent'):
-					scope = self.parent.__getconfigid__()
-				else:
-					scope = was_getconfigid(self.__scope__)
-			else:
-				scope = self.__scope__
-			
 			if not self.__template__ is None:
 				logging.debug("Creating resource using template '%s'" % self.__template__)
-				AdminConfig.createUsingTemplate(self.__type__, scope, attributes, self.__template__)
+				AdminConfig.createUsingTemplate(self.__wastype__, self.__scope__, attributes, self.__template__)
 			else:
-				AdminConfig.create(self.__type__, scope, attributes)
+				AdminConfig.create(self.__wastype__, self.__scope__, attributes)
 			
 		if not self.exists():
 			raise Exception, "Resource '%s' has not been created as expected!" % self.__id__
 		else:
-			logging.info("Created '%s' resource under scope '%s' using attrs: %s" % (self.__type__, scope.split('/')[-1].split('|')[0], attributes))
+			logging.info("Created '%s' resource under scope '%s' using attrs: %s" % (self.__wastype__, scope.split('/')[-1].split('|')[0], attributes))
 	
 	def __collectattrs__(self):
-		return [ [label, self.__flatattr__(label, value) ] for label, value in self.__attrmap__.items() if not value is None ]
+		return [ [label, self.__flatattr__(label, value) ] for label, value in self.__wasattrmap__.items() if not value is None ]
 	
 	def __getattr__(self, name):
 		try:
 			return WasObject.__getattr__(self, name)
 		except AttributeError:
-			if self.__attrmap__.has_key(name):
-				val = self.__attrmap__[name]
+			if self.__wasattrmap__.has_key(name):
+				val = self.__wasattrmap__[name]
 				if val == '': val = None
 				return val
 			else:
 				raise AttributeError, name
 	
 	def __setattr__(self, name, value):
-		if hasattr(self, '__attrmap__') and getattr(self, '__attrmap__').has_key(name):
+		if hasattr(self, '__wasattrmap__') and getattr(self, '__wasattrmap__').has_key(name):
 			if type("") == type(value):
 				value = self.__parseattr__(name, value)
-			self.__attrmap__[name] = value
+			self.__wasattrmap__[name] = value
 		else:
 			WasObject.__setattr__(self, name, value)
 	
-	def __loadattrs__(self):
+	def __loadattrs__(self, skip_attrs = []):
 		if not self.exists(): return
 		for attr in AdminConfig.show(self.__getconfigid__()).splitlines():
-			attr = attr[1:-1]               # Drop '[' and ']' from attribute string
+			if attr.startswith('[') and attr.endswith(']'):
+				attr = attr[1:-1]               # Drop '[' and ']' from attribute string
 			name = attr.split(None, 1)[0]
-			self.__attrmap__[name] = self.__parseattr__(name, attr.split(None, 1)[1])
+			if not skip_attrs.contains(name):
+				self.__wasattrmap__[name] = self.__parseattr__(name, attr.split(None, 1)[1])
 	
 	def __loaddefaults__(self): 
 		pass
 	
 	def __dumpattrs__(self):
 		str = ''
-		if hasattr(self, '__attrmap__') and hasattr(self, '__typemap__'):
-			for name, value in self.__attrmap__.items():
+		if hasattr(self, '__wasattrmap__') and hasattr(self, '__wastypemap__'):
+			for name, value in self.__wasattrmap__.items():
 				value = self.__flatattr__(name, value)
-				str = str + ("\t(%s) %s = %s\n" % (self.__typemap__[name], name, value))
+				str = str + ("\t(%s) %s = %s\n" % (self.__wastypemap__[name], name, value))
 		return str
 	
 	def __flatattr__(self, name, value):
-		if not self.__typemap__.has_key(name):
+		if not self.__wastypemap__.has_key(name):
 			raise AttributeError, "attribute '%s' can't be flattened since no type has been found" % name
-		type = self.__typemap__[name]
+		type = self.__wastypemap__[name]
 		return type.to_str(value)
 	
 	def __parseattr__(self, name, value):
-		if not self.__typemap__.has_key(name):
+		if not self.__wastypemap__.has_key(name):
 			raise AttributeError, "attribute '%s' can't be parsed since no type has been found" % name
-		type = self.__typemap__[name]
+		type = self.__wastypemap__[name]
 		return type.from_str(value)
 	
 	def __getconfigid__(self):
 		return was_getconfigid(self.__id__)
 	
 	def __hydrate__(self):
-		if not hasattr(self, '__attrmap__'):
+		if not hasattr(self, '__wasattrmap__'):
 			raise IllegalStateException, "WAS resource unproperly initialized"
 		
 		# Collect public WAS attributes
 		mydict = {}
 		map(
-			lambda x: mydict.__setitem__(x, self.__attrmap__[x]),
+			lambda x: mydict.__setitem__(x, self.__wasattrmap__[x]),
 			filter(
 				lambda x: (not x.startswith('__') and not x.endswith('__')),
-				self.__attrmap__.keys()
+				self.__wasattrmap__.keys()
 			)
 		)
 		
 		# Resolve hydrated objet scope
 		if not hasattr(self, Resource.ATTR_SCOPE):
-			if hasattr(self, 'parent'):
-				parent = getattr('parent')
+			if hasattr(self, self.__parent_attrname__):
+				parent = getattr(self, self.__parent_attrname__)
 				if not hasattr(parent, '__id__'):
-					raise IllegalStateException, "'parent' attribute must be a concrete and hydrated Resource instance"
+					raise IllegalStateException, "'%s' attribute must be a concrete and hydrated Resource instance" % self.__parent_attrname__
 				self.__scope__ = parent.__id__
 			else:
 				self.__scope__ = AdminControl.getCell()
 		else:
+			if hasattr(self, self.__parent_attrname__):
+				parent = getattr(self, self.__parent_attrname__)
+				if hasattr(parent, '__id__'):
+					mydict['parent'] = parent.__id__
 			self.__scope__ = getattr(self, Resource.ATTR_SCOPE) % mydict
 		mydict['scope'] = self.__scope__
 		
@@ -178,12 +176,12 @@ class Resource(WasObject):
 		self.__id__ = getattr(self, Resource.ATTR_ID) % mydict
 		
 		# Initialize template map for this resource type
-		if not Resource.__TEMPLATES__.has_key(self.__type__):
-			Resource.__TEMPLATES__[self.__type__] = {}
-			for tplid in AdminConfig.listTemplates(self.__type__).splitlines():
+		if not Resource.__TEMPLATES.has_key(self.__wastype__):
+			Resource.__TEMPLATES[self.__wastype__] = {}
+			for tplid in AdminConfig.listTemplates(self.__wastype__).splitlines():
 				if tplid.startswith('"') and tplid.endswith('"'):
 					tplid = tplid[1:-1]
-				Resource.__TEMPLATES__[self.__type__][tplid.split('(')[0]] = tplid
+				Resource.__TEMPLATES[self.__wastype__][tplid.split('(')[0]] = tplid
 		
 		# Hydrate resource's template name
 		template = None
@@ -193,33 +191,33 @@ class Resource(WasObject):
 	
 	def __remove__(self, deep):
 		if deep:
-			logging.info("Removing all %s objects..." % self.__type__)
-			for res in AdminConfig.list(self.__type__).splitlines():
+			logging.info("Removing all %s objects..." % self.__wastype__)
+			for res in AdminConfig.list(self.__wastype__).splitlines():
 				AdminConfig.remove(res)
 		elif self.exists():
 			id = self.__getconfigid__()
 			AdminConfig.remove(id)
 			if self.exists():
-				#raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__type__, id.split('/')[-1].split('|')[0], id)
-				raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__type__, self.__id__, self.__scope__)
+				#raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__wastype__, id.split('/')[-1].split('|')[0], id)
+				raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__wastype__, self.__id__, self.__scope__)
 			else:
-				#print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  id.split('/')[-1].split('|')[0], id)
-				logging.info("Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  self.__scope__))
+				#print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__wastype__, self.__id__,  id.split('/')[-1].split('|')[0], id)
+				logging.info("Resource '%s(id=%s)' under scope '%s' removed." % (self.__wastype__, self.__id__,  self.__scope__))
 		else:
-			logging.warn("Resource '%s(id=%s)' does not exist under scope '%s'. Nothing done." % (self.__type__, self.__id__, self.__scope__))
+			logging.warn("Resource '%s(id=%s)' does not exist under scope '%s'. Nothing done." % (self.__wastype__, self.__id__, self.__scope__))
 	
 	def __settmpl__(self, template):
-		if (template is not None) and Resource.__TEMPLATES__[self.__type__].has_key(template):
-			self.__template__ = Resource.__TEMPLATES__[self.__type__][template]
+		if (template is not None) and Resource.__TEMPLATES[self.__wastype__].has_key(template):
+			self.__template__ = Resource.__TEMPLATES[self.__wastype__][template]
 		else:
 			self.__template__ = None
 	
 	def __str__(self):
-		if hasattr(self, '__type__') and hasattr(self, '__id__') and hasattr(self, '__scope__') and hasattr(self, '__template__'):
-			str = "%s(id='%s', scope='%s', template='%s')\n" % (self.__type__, self.__id__, self.__scope__, self.__template__)
+		if hasattr(self, '__wastype__') and hasattr(self, '__id__') and hasattr(self, '__scope__') and hasattr(self, '__template__'):
+			str = "%s(id='%s', scope='%s', template='%s')\n" % (self.__wastype__, self.__id__, self.__scope__, self.__template__)
 			return str + self.__dumpattrs__()
 		else:
-			return str(self.__klass__)
+			return str(self.__wasclass__)
 	
 	def exists(self):
 		obj = self.__getconfigid__()

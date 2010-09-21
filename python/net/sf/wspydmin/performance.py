@@ -35,7 +35,7 @@ class PMIService(PropertySetResource):
 		self.parent         = parent
 
 	def __collectattrs__(self):
-		attrs = self.__super__.__collectattrs__(self)
+		attrs = self.__wassuper__.__collectattrs__(self)
 		props = []
 		for name, prop in self.__properties__.items():
 			props.append( [ name, prop.value ] )
@@ -43,5 +43,5 @@ class PMIService(PropertySetResource):
 		return attrs
 	
 	def __getconfigid__(self):
-		return AdminConfig.list(self.__type__, self.__id__).splitlines()[0]
+		return AdminConfig.list(self.__wastype__, self.__id__).splitlines()[0]
 
