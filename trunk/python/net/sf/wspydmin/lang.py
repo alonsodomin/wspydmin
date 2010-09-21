@@ -143,7 +143,6 @@ WAS_METADATA_EMPTY = {
 	'DEF_MTHDS' : [],
 	'DEF_TPL'   : None,
 	'DEF_PROPS' : {},
-	'__TYPE__'  : None
 }
 
 class WasObjectMethodWrapper:

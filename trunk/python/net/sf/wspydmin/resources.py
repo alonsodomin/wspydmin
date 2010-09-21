@@ -15,7 +15,7 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-import re, copy
+import re, copy, logging
 
 from java.lang            import IllegalStateException
 from com.ibm.ws.scripting import ScriptingException
@@ -67,10 +67,10 @@ class Resource(WasObject):
 		if self.exists():
 			if update:
 				id = self.__getconfigid__()
-				print "Updating resource '%s' under scope '%s' with attributes %s." % (self.__type__, id.split('/')[-1].split('|')[0], attributes)
+				logging.debug("Updating resource '%s' under scope '%s' with attributes %s." % (self.__type__, id.split('/')[-1].split('|')[0], attributes))
 				AdminConfig.modify(id, attributes)
 			else:
-				print "WARN: resource already exists '%s'. NOT UPDATED!" % self.__id__
+				logging.warn("Resource already exists '%s'. NOT UPDATED!" % self.__id__)
 				return
 		else:
 			if self.__scope__.startswith('/'): #Weird! TO REFACTOR!
@@ -82,15 +82,15 @@ class Resource(WasObject):
 				scope = self.__scope__
 			
 			if not self.__template__ is None:
-				print "Creating resource using template '%s'" % self.__template__
+				logging.debug("Creating resource using template '%s'" % self.__template__)
 				AdminConfig.createUsingTemplate(self.__type__, scope, attributes, self.__template__)
 			else:
 				AdminConfig.create(self.__type__, scope, attributes)
 			
-			print "Created '%s' resource under scope '%s' using attrs: %s" % (self.__type__, scope.split('/')[-1].split('|')[0], attributes)
-			
 		if not self.exists():
 			raise Exception, "Resource '%s' has not been created as expected!" % self.__id__
+		else:
+			logging.info("Created '%s' resource under scope '%s' using attrs: %s" % (self.__type__, scope.split('/')[-1].split('|')[0], attributes))
 	
 	def __collectattrs__(self):
 		return [ [label, self.__flatattr__(label, value) ] for label, value in self.__attrmap__.items() if not value is None ]
@@ -193,7 +193,7 @@ class Resource(WasObject):
 	
 	def __remove__(self, deep):
 		if deep:
-			print "Removing all %s objects..." % self.__type__
+			logging.info("Removing all %s objects..." % self.__type__)
 			for res in AdminConfig.list(self.__type__).splitlines():
 				AdminConfig.remove(res)
 		elif self.exists():
@@ -204,9 +204,9 @@ class Resource(WasObject):
 				raise Exception, "Resource '%s(id=%s)' under scope '%s' has not been removed as expected!" % (self.__type__, self.__id__, self.__scope__)
 			else:
 				#print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  id.split('/')[-1].split('|')[0], id)
-				print "Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  self.__scope__)
+				logging.info("Resource '%s(id=%s)' under scope '%s' removed." % (self.__type__, self.__id__,  self.__scope__))
 		else:
-			print "WARN: resource '%s(id=%s)' does not exist under scope '%s'. Nothing done." % (self.__type__, self.__id__, self.__scope__)
+			logging.warn("Resource '%s(id=%s)' does not exist under scope '%s'. Nothing done." % (self.__type__, self.__id__, self.__scope__))
 	
 	def __settmpl__(self, template):
 		if (template is not None) and Resource.__TEMPLATES__[self.__type__].has_key(template):
@@ -276,4 +276,4 @@ class DefaultMBean(MBean):
 			query = 'type=%s,name=%s,node=%s,process=%s,*' % (self.__type__, self.name, self.nodeName, self.serverName)
 			return AdminControl.queryNames(query).splitlines()[0]
 		else:
-			raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__class__
+			raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__klass__
