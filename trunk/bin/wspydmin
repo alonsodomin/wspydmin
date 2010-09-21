@@ -15,9 +15,7 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-# Resolve links - $0 may be a softlink - and obtain
-# the root directory of the script environment
+##
 
 DISCLAIMER <<EOF
 WSPydmin  Copyright (C) 2010  Antonio Alonso Domínguez
@@ -26,6 +24,9 @@ This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
 EOF
+
+# Resolve links - $0 may be a softlink - and obtain
+# the root directory of the script environment
 
 PRG="$0"
 
@@ -40,8 +41,9 @@ while [ -h "${PRG}" ]; do
 done
 
 WSPYDMIN_HOME=`dirname ${PRG}`
-WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
 WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
+WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
+WSPYDMIN_INCLUDE="${WSPYMIN_HOME}/include"
 
 if [ ! -f "${WSPYDMIN_CONF}" ]; then
 	echo "ERROR: Configuration file '${WSPYDMIN_CONF}' not found"
@@ -70,17 +72,92 @@ fi
 export WAS_HOME
 export WSPYDMIN_HOME
 export WSPYDMIN_LIB
+export WSPYDMIN_INCLUDE
 
-WSADMIN_ARGS="-lang jython -username ${WAS_USERNAME} -password ${WAS_PASSWORD} -profile ${WSPYMIN_LIB}/wasprofile.py"
+WSADMIN_ARGS="-lang jython -profile ${WSPYMIN_LIB}/wasprofile.py"
+WSADMIN_CLASSPATH=
+
+SCRIPT_ARGS=
+SCRIPT_NAME=
+
+# Parse command line arguments to override defaults
+while [ ! -z "$1" ]; do
+	case "$1" in
+		"-lang")
+			shift
+			if [ "$1" != "jython" ]; then
+				echo "ERROR: WSPydmin should always use Jython as script language."
+				exit 1 
+			fi
+			;;
+		"-profile")
+			shift
+			echo "ERROR: Aggregation of profile scripts is not supported"
+			exit 1
+			;;
+		"-username")
+			shift
+			WAS_USERNAME=$1
+			;;
+		"-password")
+			shift
+			WAS_PASSWORD=$1
+			;;
+		"-profileName")
+			shift
+			WAS_DEFAULT_PROFILE=$1
+			;;
+		"-wsadmin_classpath")
+			shift
+			WSADMIN_CLASSPATH=$1
+			;;
+		"-f")
+			shift
+			if [ -z "${SCRIPT_NAME}" ]; then
+				SCRIPT_NAME=$1
+			else
+				echo "ERROR: Which one of these scripts you want to run: '${SCRIPT_NAME}' or '$1'?"
+				exit 1
+			fi
+			;;
+		*)
+			if [[ $1 == -* ]]; then
+				WSADMIN_ARGS="${WSADMIN_ARGS} $1 $2"
+				shift
+			elif [ -z "${SCRIPT_NAME}" ]; then
+				SCRIPT_NAME=$1
+			else
+				SCRIPT_ARGS="${SCRIPT_ARGS} $1"
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ ! -z "${WAS_USERNAME}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -username ${WAS_USERNAME}"
+fi
+
+if [ ! -z "${WAS_PASSWORD}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -password ${WAS_PASSWORD}"
+fi
+
 if [ ! -z "${WAS_DEFAULT_PROFILE}" ]; then
 	WSADMIN_ARGS="${WSADMIN_ARGS} -profileName ${WAS_DEFAULT_PROFILE}"
 fi
 
-if [ -z "$1" ]; then
+# End of parameter parsing
+
+for f in "${WSPYDMIN_INCLUDE}/java/*.jar"; do
+	WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
+done
+
+# Invoke wsadmin.sh either interactively or silently
+if [ -z "${SCRIPT_NAME}" ]; then
 	echo $DISCLAIMER
-	${WSADMIN_CMD} ${WSADMIN_ARGS} $*
+	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} ${SCRIPT_ARGS}
+	exit 0
 else
-	script=$1
-	shift
-	${WSADMIN_CMD} ${WSADMIN_ARGS} -f $script $*
+	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
+	exit $?
 fi

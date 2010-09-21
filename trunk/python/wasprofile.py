@@ -15,15 +15,23 @@
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-import sys, os
+import sys, os, glob
 
-wasPythonLib = os.environ.get('WSPYDMIN_LIB')
-if wasPythonLib is None:
+wsPydminLib = os.environ.get('WSPYDMIN_LIB')
+if wsPydminLib is None:
 	print "ERROR: Environment variable 'WSPYDMIN_LIB' must be set."
 	sys.exit(2)
 
-print "Python scripting library installed in: '%s'" % wasPythonLib
-sys.path.append(wasPythonLib)
+# Load into system path WSPydmin library
+print "WSPydmin scripting library installed in: '%s'" % wsPydminLib
+sys.path.append(wsPydminLib)
+
+# Load external includes into system path
+wsPydminInclude = os.environ.get('WSPYDMIN_INCLUDE')
+if not wsPydminInclude is not None:
+	for include in glob.glob("%s/python/*" % wsPydminInclude):
+		print "WSPydmin has included library found at '%s'" % include
+		sys.path.append(include)
 
 # Directly place references to each
 # WebSphere admin instance into

@@ -91,7 +91,7 @@ class LibraryRef(Resource):
 	}
 	
 	def __init__(self, library, targetResourceName):
-		Resource.__init__(self)
+		self.__super__(self)
 		self.libraryName        = library.name
 		self.targetResourceName = targetResourceName
 		
@@ -105,7 +105,7 @@ class LibraryRef(Resource):
 		if (self.__scope__ is None):   # <-- scope = parent.__id__
 			raise IllegalStateException, 'Cannot create a library Ref on a (server or application) that does not exist'
 	
-	def __getconfigid__(self, id = None):
+	def __getconfigid__(self):
 		for librefId in AdminConfig.list(self.__type__).splitlines():
 			libName = AdminConfig.showAttribute(librefId, 'libraryName')
 			if (libName == self.libraryName and librefId.find(self.targetResourceName)!=-1 ):
