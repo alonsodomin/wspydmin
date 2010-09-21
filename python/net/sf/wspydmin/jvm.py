@@ -20,7 +20,6 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.properties import Property
 
 class JavaVirtualMachine(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/JavaVirtualMachine:/'
 	DEF_ATTRS = {
 			          'bootClasspath' : None,

@@ -30,29 +30,22 @@ class Resource(WasObject):
 	__DEF_PATTERN__ = re.compile('\%\(\w+\)[s|i]')
 	__TEMPLATES__   = {}
 	
+	ATTR_ID    = 'DEF_ID'
+	ATTR_SCOPE = 'DEF_SCOPE'
+	ATTR_ATTRS = 'DEF_ATTRS'
+	ATTR_TPL   = 'DEF_TPL'
+	
 	def __init__(self):
-		if not hasattr(self, 'DEF_ID'):
+		if not hasattr(self, Resource.ATTR_ID):
 			raise AbstractResourceError, self.__type__
 
-		self.__id__ = getattr(self, 'DEF_ID')
-		try:
-			self.__scope__ = getattr(self, 'DEF_SCOPE')
-		except AttributeError:
-			self.__scope__ = None
-
 		try:	
-			self.__attrmap__ = copy.copy(getattr(self, 'DEF_ATTRS'))
+			self.__attrmap__ = copy.copy(getattr(self, Resource.ATTR_ATTRS))
 		except AttributeError:
 			self.__attrmap__ = {}
 		
 		# Container for attribute data types
-		self.__typemap__ = {}
-		
-		try:
-			template = getattr(self, 'DEF_TPL')
-			self.__settmpl__(template)
-		except AttributeError:
-			self.__template__ = None
+		self.__typemap__ = {}		
 		
 	def __postinit__(self):
 		if self.__type__ is None: return
@@ -155,6 +148,10 @@ class Resource(WasObject):
 		return was_getconfigid(self.__id__)
 	
 	def __hydrate__(self):
+		if not hasattr(self, '__attrmap__'):
+			raise IllegalStateException, "WAS resource unproperly initialized"
+		
+		# Collect public WAS attributes
 		mydict = {}
 		map(
 			lambda x: mydict.__setitem__(x, self.__attrmap__[x]),
@@ -164,20 +161,35 @@ class Resource(WasObject):
 			)
 		)
 		
-		if (self.__scope__ is None):
+		# Resolve hydrated objet scope
+		if not hasattr(self, Resource.ATTR_SCOPE):
 			if hasattr(self, 'parent'):
 				parent = getattr('parent')
 				if not hasattr(parent, '__id__'):
-					raise IllegalStateException, "'parent' attribute must be a hydrated Resource"
+					raise IllegalStateException, "'parent' attribute must be a concrete and hydrated Resource instance"
 				self.__scope__ = parent.__id__
 			else:
 				self.__scope__ = AdminControl.getCell()
-		elif not (Resource.__DEF_PATTERN__.search(self.__scope__) is None):
-			self.__scope__ = getattr(self, 'DEF_SCOPE') % mydict
-		
+		else:
+			self.__scope__ = getattr(self, Resource.ATTR_SCOPE) % mydict
 		mydict['scope'] = self.__scope__
 		
-		self.__id__ = getattr(self, 'DEF_ID') % mydict
+		# Hydrate object id
+		self.__id__ = getattr(self, Resource.ATTR_ID) % mydict
+		
+		# Initialize template map for this resource type
+		if not Resource.__TEMPLATES__.has_key(self.__type__):
+			Resource.__TEMPLATES__[self.__type__] = {}
+			for tplid in AdminConfig.listTemplates(self.__type__).splitlines():
+				if tplid.startswith('"') and tplid.endswith('"'):
+					tplid = tplid[1:-1]
+				Resource.__TEMPLATES__[self.__type__][tplid.split('(')[0]] = tplid
+		
+		# Hydrate resource's template name
+		template = None
+		if hasattr(self, Resource.ATTR_TPL):
+			template = getattr(self, Resource.ATTR_TPL) % mydict
+		self.__settmpl__(template)
 	
 	def __remove__(self, deep):
 		if deep:
@@ -195,14 +207,7 @@ class Resource(WasObject):
 			print "WARN: resource '%s' does not exist. Nothing done." % self.__id__
 	
 	def __settmpl__(self, template):
-		if not Resource.__TEMPLATES__.has_key(self.__type__):
-			Resource.__TEMPLATES__[self.__type__] = {}
-			for tplid in AdminConfig.listTemplates(self.__type__).splitlines():
-				if tplid.startswith('"') and tplid.endswith('"'):
-					tplid = tplid[1:-1]
-				Resource.__TEMPLATES__[self.__type__][tplid.split('(')[0]] = tplid
-		
-		if Resource.__TEMPLATES__[self.__type__].has_key(template):
+		if (template is not None) and Resource.__TEMPLATES__[self.__type__].has_key(template):
 			self.__template__ = Resource.__TEMPLATES__[self.__type__][template]
 		else:
 			self.__template__ = None

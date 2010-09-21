@@ -21,7 +21,6 @@ from net.sf.wspydmin.resources import Resource
 
 class JAASAuthData(Resource):
 	DEF_ID    = '/JAASAuthData:%(alias)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
               'alias' : None,
              'userId' : None,
@@ -41,9 +40,7 @@ class JAASAuthData(Resource):
 		return None
 
 class Security(Resource):
-	DEF_SCOPE = None
-	DEF_ID    = '/Security:/'
-	DEF_TPL   = None
+	DEF_ID    = '%(scope)sSecurity:/'
 	DEF_ATTRS = {
               'CSI' : None,
 			  'IBM' : None
@@ -56,23 +53,22 @@ class Security(Resource):
 	
 	def getCsiIIOPSecurityProtocol(self):
 		id = AdminConfig.showAttribute(self.__getconfigid__(), 'CSI')
-		return IIOPSecurityProtocol(id)
+		return IIOPSecurityProtocol(id, self)
 
 	def getIbmIIOPSecurityProtocol(self):
 		id = AdminConfig.showAttribute(self.__getconfigid__(), 'IBM')
-		return IIOPSecurityProtocol(id)
+		return IIOPSecurityProtocol(id, self)
 
 class IIOPSecurityProtocol(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/IIOPSecurityProtocol:/'
-	DEF_TPL   = None
 	DEF_ATTRS = { }
 	
-	def __init__(self, wasid):
+	def __init__(self, wasid, parent):
 		Resource.__init__(self)
 		self.__wasid__ = wasid
 		self.inbound   = self.getInboundConfiguration()
 		self.outbound  = self.getOutboundConfiguration()
+		self.parent    = parent
 		
 	def __create__(self, update):
 		self.inbound.__create__(update)
@@ -87,11 +83,11 @@ class IIOPSecurityProtocol(Resource):
 		
 		id = AdminConfig.showAttribute(self.__getconfigid__(), 'claims')
 		if not id is None:
-			self.claims = CommonSecureInterop(id)
+			self.claims = CommonSecureInterop(id, self)
 			
 		id = AdminConfig.showAttribute(self.__getconfigid__(), 'performs')
 		if not id is None:
-			self.performs = CommonSecureInterop(id)
+			self.performs = CommonSecureInterop(id, self)
 	
 	def __remove__(self, deep):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
@@ -105,16 +101,15 @@ class IIOPSecurityProtocol(Resource):
 		self.outbound.enableTCPIPTransport()
 
 class CommonSecureInterop(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/CommonSecureInterop:/'
-	DEF_TPL   = None
 	DEF_ATTRS = { }
 	
-	def __init__(self, wasid):
+	def __init__(self, wasid, parent):
 		Resource.__init__(self)
 		self.__wasid__      = wasid
 		self.messageLayer   =  self.getMessageLayer()
 		self.transportLayer =  self.getTransportLayer()
+		self.parent         = parent
 		
 	def __create__(self, update):
 		self.messageLayer.__create__(update)
@@ -132,7 +127,7 @@ class CommonSecureInterop(Resource):
 			AdminConfig.showAttribute(self.__getconfigid__(), 'layers')[1:-1].split()
 		)[0]
 		
-		return MessageLayer(id)
+		return MessageLayer(id, self)
     
 	def getTransportLayer(self):
 		id = filter(
@@ -140,7 +135,7 @@ class CommonSecureInterop(Resource):
 			AdminConfig.showAttribute(self.__getconfigid__(), 'layers')[1:-1].split()
 		)[0]
 		
-		return TransportLayer(id)
+		return TransportLayer(id, self)
 	
 	def getIdentityAssertionLayer(self):
 		raise NotImplementedError, "Method not implemented yet."
@@ -153,20 +148,19 @@ class CommonSecureInterop(Resource):
 		self.transportLayer.enableTCPIPTransport()
 
 class Layer(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/Layer:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
 		'supportedQOP' : None,
 		 'requiredQOP' : None
 	}
 	
-	def __init__(self, wasid):
+	def __init__(self, wasid, parent):
 		Resource.__init__(self)
 		self.__wasid__ = wasid
+		self.parent    = parent
 		
 	def __getattr__(self, name):
-		if (name in Layer.DEF_ATTRS.keys()) and (not self.__attrmap__.has_key(name)):
+		if (name in Layer.DEF_ATTRS.keys()) and (self.__attrmap__[name] is None):
 			obj = self.__getattrobj__(name)
 			self.__attrmap__[name] = obj
 			return obj
@@ -187,30 +181,30 @@ class Layer(Resource):
 
 class MessageLayer(Layer):
 
-	def __init__(self, wasid):
-		Layer.__init__(self, wasid)
+	def __init__(self, wasid, parent):
+		Layer.__init__(self, wasid, parent)
 
 	def __create__(self, update):
 		self.supportedQOP.__create__(update)
 	
 	def __getattrobj__(self, name):
 		id = AdminConfig.showAttribute(self.__getconfigid__(), name)
-		return MessageQOP(id)
+		return MessageQOP(id, self)
 
 	def disableBasicAuthentication(self):
 		self.supportedQOP.establishTrustInClient = 'false'
 	
 class TransportLayer(Layer):
 	
-	def __init__(self, wasid):
-		Layer.__init__(self, wasid)
+	def __init__(self, wasid, parent):
+		Layer.__init__(self, wasid, parent)
 	
 	def __create__(self, update):
 		self.supportedQOP.__create__(update)
 	
 	def __getattrobj__(self, name):
 		id = AdminConfig.showAttribute(self.__getconfigid__(), name)
-		return TransportQOP(id)
+		return TransportQOP(id, self)
 	
 	def disableClientCertificateAuthentication(self):
 		self.supportedQOP.establishTrustInClient = 'false'
@@ -219,18 +213,17 @@ class TransportLayer(Layer):
 		self.supportedQOP.enableProtection = 'false'
 
 class MessageQOP(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/MessageQOP:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
        'enableOutOfSequenceDetection' : None,
               'enableReplayDetection' : None,
              'establishTrustInClient' : None
 	}
 	
-	def __init__(self, wasid):
+	def __init__(self, wasid, parent):
 		Resource.__init__(self)
 		self.__wasid__ = wasid
+		self.parent    = parent
 		
 	def __getconfigid__(self, id = None):
 		return self.__wasid__
@@ -239,9 +232,7 @@ class MessageQOP(Resource):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
 
 class TransportQOP(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/TransportQOP:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
                           'integrity' : None,
                     'confidentiality' : None,
@@ -249,8 +240,10 @@ class TransportQOP(Resource):
              'establishTrustInClient' : None
 	}
 	
-	def __init__(self, wasid):
+	def __init__(self, wasid, parent):
+		Resource.__init__(self)
 		self.__wasid__ = wasid
+		self.parent    = parent
 	
 	def __getconfigid__(self, id = None):
 		return self.__wasid__

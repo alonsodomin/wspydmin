@@ -20,7 +20,6 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.tunning    import SessionManager
 
 class WebContainer(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/WebContainer:/'
 	DEF_ATTRS = {
                 'disablePooling' : 'false',

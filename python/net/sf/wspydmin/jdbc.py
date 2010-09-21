@@ -32,9 +32,7 @@ from net.sf.wspydmin.security                      import JAASAuthData
 from net.sf.wspydmin.properties                    import J2EEPropertySetResource
 
 class CMPConnectorFactory(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '%(scope)sCMPConnectorFactory:%(name)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
                                'name' : None,
                       'authDataAlias' : None,
@@ -49,12 +47,12 @@ class CMPConnectorFactory(Resource):
                            'provider' : None
 	}
 
-	__J2C_RESOURCE_ADAPTER_NAME__ = 'WebSphere Relational Resource Adapter'
+	J2C_RESOURCE_ADAPTER_NAME = 'WebSphere Relational Resource Adapter'
 
 	def __init__(self, name):
 		Resource.__init__(self)
-		self.name = name
-		self.parent = J2CResourceAdapter(CMPConnectorFactory.__J2C_RESOURCE_ADAPTER_NAME__)
+		self.name   = name
+		self.parent = J2CResourceAdapter(CMPConnectorFactory.J2C_RESOURCE_ADAPTER_NAME)
 
 	def __postinit__(self):
 		Resource.__postinit__(self)
@@ -62,9 +60,7 @@ class CMPConnectorFactory(Resource):
 			self.provider = AdminConfig.getid(self.__scope__)
 
 class JDBCProvider(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '%(scope)s/JDBCProvider:%(name)s/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
 						   'name' : None,
                    'providerType' : None,
@@ -82,7 +78,6 @@ class JDBCProvider(Resource):
 
 class DataSource(J2EEPropertySetResource):
 	DEF_ID    = '%(scope)sDataSource:%(name)s'
-	DEF_SCOPE = None
 	DEF_ATTRS = {
 		   'authDataAlias' : None,
 		    	'provider' : None,

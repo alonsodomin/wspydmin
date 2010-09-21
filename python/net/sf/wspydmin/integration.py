@@ -34,7 +34,6 @@ class SIResource(Resource):
 		return str
 
 class SIBus(SIResource):
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ID    = '/SIBus:%(bus)s/'
 	DEF_ATTRS = {
                         'bus' : None,                      
@@ -45,9 +44,10 @@ class SIBus(SIResource):
             'discardOnDelete' : None
 	}
 	
-	def __init__(self, name):
+	def __init__(self, name, parent = Cell()):
 		SIResource.__init__(self)
-		self.bus = name
+		self.bus            = name
+		self.parent         = parent
 		self.__busmembers__ = []
 		
 	def __create__(self, update):    
@@ -110,7 +110,6 @@ class SIBus(SIResource):
 			SIBus(sibName).remove()
 
 class SIBusMember(SIResource):
-	DEF_SCOPE = '/Cell:%s/'
 	DEF_ID    = '/SIBusMember:%(bus)s/'
 	DEF_ATTRS = {
                                  'bus' : None,
@@ -146,9 +145,10 @@ class SIBusMember(SIResource):
                   'datasourceJndiName' : None
 	}
 	
-	def __init__(self, busName):
+	def __init__(self, busName, parent = Cell()):
 		SIResource.__init__(self)
-		self.bus = bus
+		self.bus    = busName
+		self.parent = parent
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
@@ -165,7 +165,6 @@ class SIBusMember(SIResource):
 		print >> sys.stderr, "WARN: SIBusMember.removeAll() not implemented. User SIBus.removeAll() instead."
 
 class SIBJMSConnectionFactory(SIResource):
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ID    = '/SIBJMSConnectionFactory:%(name)s/'
 	DEF_ATTRS = {
                                   'name' : None,
@@ -232,7 +231,6 @@ class SIBJMSTopicConnectionFactory(SIBJMSConnectionFactory):
 		SIBJMSConnectionFactory.__init__(self, name, jndiName, busName, parent, SIBJMSConnectionFactory.TOPIC_CONNECTION_FACTORY)
 
 class SIBJMSTopic(SIResource):
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ID    = '/SIBJMSTopic:%(name)s/'
 	DEF_ATTRS = {
                 "name" : None,
@@ -267,7 +265,6 @@ class SIBJMSTopic(SIResource):
 			AdminTask.deleteSIBJMSTopic(id)
 
 class SIBDestination(SIResource):
-	DEF_SCOPE = None                    # '/Cell:%s/'
 	DEF_ID    = '/SIBDestination:%(name)s/',
 	DEF_ATTRS = {
                 "bus" : None,
@@ -275,9 +272,10 @@ class SIBDestination(SIResource):
                "type" : None,
 	}
 	
-	def __init__(self, name):
+	def __init__(self, name, parent = Cell()):
 		SIResource.__init__(self)
-		self.name = name
+		self.name   = name
+		self.parent = parent
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
@@ -290,7 +288,6 @@ class SIBDestination(SIResource):
 		raise NotImplementedError("WARN: SIBDestination.removeAll() not implemented. SIBBus.removeAll() does the job...")
 
 class SIBJMSQueue(SIResource):
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ID    = '/SIBJMSQueue:%(name)s/'
 	DEF_ATTRS = {
                 "name" : None,
@@ -348,7 +345,6 @@ class SIBJMSQueue(SIResource):
 			AdminTask.deleteSIBJMSQueue(id)
 
 class SIBJMSActivationSpec(SIResource):
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ID    = '/J2CActivationSpec:%(name)s/'
 	DEF_ATTRS = {
                            'name' : None,

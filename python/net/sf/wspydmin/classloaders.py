@@ -21,7 +21,6 @@ from net.sf.wspydmin               import AdminConfig, AdminControl
 from net.sf.wspydmin.resources     import Resource
 
 class ClassLoader(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/Classloader:/'
 	DEF_ATTRS = {
         'mode' : None #PARENT_FIRST, PARENT_LAST

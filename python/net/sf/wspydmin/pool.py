@@ -19,9 +19,7 @@ from net.sf.wspydmin           import AdminConfig
 from net.sf.wspydmin.resources import Resource
 
 class ConnectionPool(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '%(scope)sConnectionPool:/'
-	DEF_TPL   = None
 	DEF_ATTRS = {
                             'agedTimeout' : 0,
                       'connectionTimeout' : 180,

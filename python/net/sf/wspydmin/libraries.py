@@ -20,12 +20,12 @@ import sys, traceback
 from java.lang                     import IllegalArgumentException, IllegalStateException
 
 from net.sf.wspydmin               import AdminConfig, AdminControl
+from net.sf.wspydmin.admin         import Cell
 from net.sf.wspydmin.resources     import Resource
 from net.sf.wspydmin.classloaders  import ClassLoader
 
 class Library(Resource):
 	DEF_ID    = '/Library:%(name)s/'
-	DEF_SCOPE = '/Cell:%s/' % AdminControl.getCell()
 	DEF_ATTRS = {
                'name' : None,
           'classPath' : None,
@@ -35,9 +35,11 @@ class Library(Resource):
 	
 	__NAMEPREFIX__ = 'WSPYDMINLIB_'
 	
-	def __init__(self, name):
+	def __init__(self, name, parent = Cell()):
 		Resource.__init__(self)
-		self.name            = Library.__NAMEPREFIX__ + str(name)
+		self.name   = Library.__NAMEPREFIX__ + str(name)
+		self.parent = parent
+		
 		self.__classpath__   = []
 		self.__nativepath__  = []
 		self.__libraryRefs__ = []
@@ -83,7 +85,6 @@ class Library(Resource):
 		)
 
 class LibraryRef(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/LibraryRef:/'
 	DEF_ATTRS = {
               'libraryName' : None,                          

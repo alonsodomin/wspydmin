@@ -22,7 +22,6 @@ from net.sf.wspydmin.properties import PropertySetResource
 
 class PMIService(PropertySetResource):
 	DEF_ID    = '%(scope)sNode:%(node)s/Server:%(server)s/'
-	DEF_SCOPE = None
 	DEF_ATTRS = {
 		           'enable' : None,
 		 'initialSpecLevel' : None,

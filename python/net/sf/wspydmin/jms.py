@@ -16,11 +16,28 @@
 ##
 
 from net.sf.wspydmin            import AdminConfig, AdminControl
+from net.sf.wspydmin.admin      import Cell
 from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.pool       import ConnectionPool
 
+class JMSProvider(Resource):
+	DEF_ID    = '/JMSProvider:%(name)s/'
+	DEF_ATTRS = {
+				'name' : None
+	}
+	
+	def __init__(self, name, parent = Cell()):
+		Resource.__init__(self)
+		self.name   = name
+		self.parent = parent
+
+class MQJMSProvider(JMSProvider):
+	JMS_PROVIDER_NAME = 'WebSphere MQ JMS Provider'
+	
+	def __init__(self, parent = Cell()):
+		JMSProvider.__init__(self, MQJMSProvider.JMS_PROVIDER_NAME, parent)
+
 class MQQueueConnectionFactory(Resource):
-	DEF_SCOPE = '/Cell:%s/JMSProvider:WebSphere MQ JMS Provider/' % AdminControl.getCell()
 	DEF_ID    = '/MQQueueConnectionFactory:%(name)s/'
 	DEF_TPL   = 'Example non-XA WMQ QueueConnectionFactory'
 	DEF_ATTRS = {
@@ -35,7 +52,8 @@ class MQQueueConnectionFactory(Resource):
 	
 	def __init__(self, name):
 		self.__super__()
-		self.name = name
+		self.name   = name
+		self.parent = MQJMSProvider()
 		
 	def getConnectionPool(self):
 		return ConnectionPool(self, 0)
@@ -48,7 +66,6 @@ class MQQueueConnectionFactory(Resource):
 		self.port = port
 
 class MQQueue(Resource):
-	DEF_SCOPE = '/Cell:%s/JMSProvider:WebSphere MQ JMS Provider/' % AdminControl.getCell()
 	DEF_ID    = '/MQQueue:%(name)s/'
 	DEF_TPL   = 'Example.JMS.WMQ.Q1'
 	DEF_ATTRS = {
@@ -61,4 +78,5 @@ class MQQueue(Resource):
 	
 	def __init__(self, name):
 		self.__super__()
-		self.name = name
+		self.name   = name
+		self.parent = MQJMSProvider()

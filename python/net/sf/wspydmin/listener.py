@@ -23,7 +23,6 @@ from net.sf.wspydmin.tunning   import ThreadPool
 from net.sf.wspydmin.utils     import *
 
 class MessageListenerService(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '/MessageListenerService:/'
 	DEF_ATTRS = {
                             'enable' : 'false',
@@ -84,7 +83,6 @@ class MessageListenerService(Resource):
 			lp.remove()
 
 class ListenerPort(DefaultMBean):
-	DEF_SCOPE   = None
 	DEF_ID      = '/ListenerPort:%(name)s/'
 	DEF_ATTRS   = {
                              'name' : None,
@@ -125,7 +123,6 @@ class ListenerPort(DefaultMBean):
 		return AdminControl.getAttribute(self.__getmbeanid__(), 'started') == 'true'
 	
 class StateManageable(Resource):
-	DEF_SCOPE = None
 	DEF_ID    = '%(scope)sStateManageable:/'
 	DEF_ATTRS = {
         'initialState' : 'START'      
