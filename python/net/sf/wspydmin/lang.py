@@ -140,6 +140,28 @@ class WasObjectMethodWrapper:
 	def __call__(self, *args, **kw):
 		return apply(self.func, (self.inst,) + args, kw)
 
+class WasObjectSuperHelper:
+	
+	def __init__(self, instance, klass):
+		self.instance = instance
+		self.klass = klass
+	
+	def __getattr__(self, name):
+		for base in self.klass.__bases__:
+			try:
+				return base.__getattr__(name)
+			except AttributeError:
+				pass
+		raise AttributeError, name
+		
+	def __call__(self, *args, **kwargs):
+		for base in self.klass.__bases__:
+			try:
+				init = getattr(base, '__init__')
+				apply(init, (self.instance,) + args, kwargs)
+			except AttributeError:
+				pass
+
 class WasObjectHelper:
 	
 	__methodwrapper__ = WasObjectMethodWrapper
@@ -165,28 +187,6 @@ class WasObjectHelper:
 	
 	def __missedattr__(self, name):
 		raise AttributeError, name
-
-class WasObjectSuperHelper:
-	
-	def __init__(self, instance, klass):
-		self.instance = instance
-		self.klass = klass
-	
-	def __getattr__(self, name):
-		for base in self.klass.__bases__:
-			try:
-				return base.__getattr__(name)
-			except AttributeError:
-				pass
-		raise AttributeError, name
-		
-	def __call__(self, *args, **kwargs):
-		for base in self.klass.__bases__:
-			try:
-				init = getattr(base, '__init__')
-				apply(init, (self.instance,) + args, kwargs)
-			except AttributeError:
-				pass
 
 class WasObjectClass:
 	__helper__    = WasObjectHelper

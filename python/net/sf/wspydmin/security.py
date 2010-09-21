@@ -20,7 +20,6 @@ from net.sf.wspydmin.admin     import Cell
 from net.sf.wspydmin.resources import Resource
 
 class JAASAuthData(Resource):
-	DEF_SCOPE = '/Cell:%s/Security:/' % AdminControl.getCell()
 	DEF_ID    = '/JAASAuthData:%(alias)s/'
 	DEF_TPL   = None
 	DEF_ATTRS = {
@@ -30,9 +29,10 @@ class JAASAuthData(Resource):
         'description' : None
 	}
 	
-	def __init__(self, alias):
+	def __init__(self, alias, parent = Security()):
 		Resource.__init__(self)
-		self.alias = alias
+		self.alias  = alias
+		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
 		for res in AdminConfig.list(self.__type__).splitlines():
@@ -78,19 +78,23 @@ class IIOPSecurityProtocol(Resource):
 		self.inbound.__create__(update)
 		self.outbound.__create__(update)
 	
-	def __getconfigid__(self, id = None):
+	def __getconfigid__(self):
 		return self.__wasid__
+	
+	def __loadattrs__(self):
+		Resource.__loadattrs__(self)
+		if not self.exists(): return
+		
+		id = AdminConfig.showAttribute(self.__getconfigid__(), 'claims')
+		if not id is None:
+			self.claims = CommonSecureInterop(id)
+			
+		id = AdminConfig.showAttribute(self.__getconfigid__(), 'performs')
+		if not id is None:
+			self.performs = CommonSecureInterop(id)
 	
 	def __remove__(self, deep):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__type__
-	
-	def getInboundConfiguration(self):
-		id = AdminConfig.showAttribute(self.__getconfigid__(), 'claims')
-		return CommonSecureInterop(id)
-    
-	def getOutboundConfiguration(self):
-		id = AdminConfig.showAttribute(self.__getconfigid__(), 'performs')
-		return CommonSecureInterop(id)
 
 	def disableAuthentication(self):
 		self.inbound.disableAuthentication()
@@ -116,7 +120,7 @@ class CommonSecureInterop(Resource):
 		self.messageLayer.__create__(update)
 		self.transportLayer.__create__(update)
 	
-	def __getconfigid__(self, id = None):
+	def __getconfigid__(self):
 		return self.__wasid__
 	
 	def __remove__(self, deep):

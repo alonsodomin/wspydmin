@@ -155,7 +155,8 @@ class Resource(WasObject):
 	
 	def __hydrate__(self):
 		mydict = {}
-		map(lambda x: mydict[x] = self.__attrmap__[x],
+		map(
+			lambda x: (mydict[x]=self.__attrmap__[x]),
 			filter(
 				lambda x: return (not x.startswith('__') and not x.endswith('__'),
 				self.__attrmap__.keys()
