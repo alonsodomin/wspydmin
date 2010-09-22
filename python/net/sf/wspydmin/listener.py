@@ -18,7 +18,8 @@
 from java.lang                 import UnsupportedOperationException
 
 from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.resources import Resource, MBean
+from net.sf.wspydmin.mbean     import ResourceMBean
+from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.tunning   import ThreadPool
 from net.sf.wspydmin.utils     import *
 
@@ -40,13 +41,13 @@ class MessageListenerService(Resource):
 		Resource.__init__(self)
 		self.parent     = parent
 		self.nodeName   = parent.nodeName
-		self.serverName = parent.name
+		self.serverName = parent.serverName
 		
 	def __loadattrs__(self):
 		def excludes(x): return not {'threadPool' : None, 'listenerPorts':None}.has_key(x[0])
 		if self.exists():
 			for name, value in filter(excludes, map(splitAttrs, AdminConfig.show(self.__getconfigid__()).splitlines())):
-				self.__wasattrmap__[name] = value
+				self.__wasattrmap__[name] = self.__parseattr__(name, value)
 	
 	def __getconfigid__(self):
 		id = AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
@@ -82,7 +83,7 @@ class MessageListenerService(Resource):
 		for name, lp in self.getListenerPorts().items():
 			lp.remove()
 
-class ListenerPort(DefaultMBean):
+class ListenerPort(ResourceMBean):
 	DEF_ID      = '/ListenerPort:%(name)s/'
 	DEF_ATTRS   = {
                              'name' : None,
@@ -100,18 +101,18 @@ class ListenerPort(DefaultMBean):
 	DEF_INITIAL = 'START'
 	
 	def __init__(self, name, parent):
-		DefaultMBean.__init__(self)
+		ResourceMBean.__init__(self)
 		self.name         = name
 		self.parent       = parent
 		self.nodeName     = parent.nodeName
 		self.serverName   = parent.serverName
 		self.initialState = ListenerPort.DEF_INITIAL
-		self.__statemng__ = StateManageable(self)
+		self.__statemng   = StateManageable(self)
 		
 	def __create__(self, update):
-		DefaultMBean.__create__(self, update)
+		ResourceMBean.__create__(self, update)
 		if self.initialState != ListenerPort.DEF_INITIAL:
-			self.__statemng__.update()
+			self.__statemng.update()
 	
 	def __getconfigid__(self, id = None):
 		for lpid in AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines():
@@ -120,7 +121,7 @@ class ListenerPort(DefaultMBean):
 		return None
 	
 	def isStarted(self):
-		return AdminControl.getAttribute(self.__getmbeanid__(), 'started') == 'true'
+		return (AdminControl.getAttribute(self.__getmbeanid__(), 'started') == 'true')
 	
 class StateManageable(Resource):
 	DEF_ID    = '%(scope)sStateManageable:/'

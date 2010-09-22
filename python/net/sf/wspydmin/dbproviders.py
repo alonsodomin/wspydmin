@@ -15,14 +15,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from net.sf.wspydmin.admin     import Cell
 from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.jdbc      import JDBCProvider, DataSource
 
 class OracleJDBCProvider(JDBCProvider):
 	DEF_TPL = 'Oracle JDBC Driver'
 
-	def __init__(self):
-		JDBCProvider.__init__(self, OracleJDBCProvider.DEF_TPL)
+	def __init__(self, parent = Cell()):
+		JDBCProvider.__init__(self, OracleJDBCProvider.DEF_TPL, parent)
 
 	def __loaddefaults__(self):
 		self.providerType = 'Oracle JDBC Driver'
@@ -32,15 +33,15 @@ class OracleJDBCProvider(JDBCProvider):
 	
 	def __create__(self, update):
 		JDBCProvider.__create__(self, update)
-		junk = DataSource()
+		junk = DataSource(self)
 		junk.name = 'Oracle JDBC Driver DataSource'
 		junk.remove()
 
 class OracleXaJDBCProvider(JDBCProvider):
 	DEF_TPL = 'Oracle JDBC Driver (XA)'
 
-	def __init__(self):
-		JDBCProvider.__init__(self, OracleXaJDBCProvider.DEF_TPL)
+	def __init__(self, parent = Cell()):
+		JDBCProvider.__init__(self, OracleXaJDBCProvider.DEF_TPL, parent)
 
 	def __loaddefaults__(self):
 		self.providerType = 'Oracle JDBC Driver (XA)'
@@ -57,8 +58,8 @@ class OracleXaJDBCProvider(JDBCProvider):
 
 class DB2UDBJDBCProvider(JDBCProvider):
 	
-	def __init__(self):
-		JDBCProvider.__init__(self, 'DB2 UDB for iSeries JDBC Provider')
+	def __init__(self, parent = Cell()):
+		JDBCProvider.__init__(self, 'DB2 UDB for iSeries JDBC Provider', parent)
 
 	def __loaddefaults__(self):
 		self.providerType = 'DB2 UDB for iSeries (Toolbox)'
@@ -68,8 +69,8 @@ class DB2UDBJDBCProvider(JDBCProvider):
 
 class IngressJDBCProvider(JDBCProvider):
 	
-	def __init__(self):
-		JDBCProvider.__init__(self, 'Ingress JDBC Provider')
+	def __init__(self, parent = Cell()):
+		JDBCProvider.__init__(self, 'Ingress JDBC Provider', parent)
 
 	def __loaddefaults__(self):
 		#self.providerType = 'User-defined JDBC Provider'
@@ -80,8 +81,8 @@ class IngressJDBCProvider(JDBCProvider):
 
 class SybaseJDBCProvider(JDBCProvider):
 	
-	def __init__(self):
-		JDBCProvider.__init__(self, 'Sybase JDBC 3 Driver')
+	def __init__(self, parent = Cell()):
+		JDBCProvider.__init__(self, 'Sybase JDBC 3 Driver', parent)
 	
 	def __loaddefaults__(self):
 		self.providerType = 'Sybase JDBC 3 Driver'

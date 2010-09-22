@@ -28,7 +28,7 @@ class SIResource(Resource):
 	
 	def __collectattrs__(self):
 		str = ''
-		for label, value in self.__wasattrmap__.items():
+		for label, value in self.__wasattrmap.items():
 			if not value is None:
 				str = '%s -%s %s' % (str, label, value)
 		return str

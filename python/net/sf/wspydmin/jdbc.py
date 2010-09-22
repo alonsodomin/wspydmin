@@ -28,12 +28,12 @@ from net.sf.wspydmin.admin                         import Cell
 from net.sf.wspydmin.pool                          import ConnectionPool
 from net.sf.wspydmin.resources                     import Resource
 from net.sf.wspydmin.security                      import JAASAuthData
-from net.sf.wspydmin.properties                    import J2EEPropertySetResource
+from net.sf.wspydmin.properties                    import J2EEPropertyHolderResource
 
 class J2CResourceAdapter(Resource):
     DEF_ID    = '%(scope)sJ2CResourceAdapter:%(name)s/'
     DEF_ATTRS = {
-                 'name' : None
+        'name' : None
     }
     
     def __init__(self, name):
@@ -91,7 +91,7 @@ class JDBCProvider(Resource):
 		self.name   = name
 		self.parent = parent
 
-class DataSource(J2EEPropertySetResource):
+class DataSource(J2EEPropertyHolderResource):
 	__parent_attrname__ = 'provider'
 	
 	DEF_ID    = '%(scope)sDataSource:%(name)s'
@@ -109,13 +109,13 @@ class DataSource(J2EEPropertySetResource):
 		if provider is None:
 			raise IllegalArgumentException, 'A provider must be given'
 		
-		J2EEPropertySetResource.__init__(self)
-		self.__auth     = None
-		self.__iscmp    = None
-		self.__cmpcf    = None
-		
-		self.provider     = provider
-		self.providerType = provider.providerType
+		J2EEPropertyHolderResource.__init__(self)
+		self.__auth       = None
+		self.__iscmp      = None
+		self.__cmpcf      = None
+        self.__pool       = ConnectionPool(self)
+        self.provider     = provider
+        self.providerType = provider.providerType
 	
 	def __create__(self, update):
 		#1.- Configure Auth Data       
@@ -129,11 +129,14 @@ class DataSource(J2EEPropertySetResource):
 		#2.- Configure JDBC Provider
 		self.provider.__create__(update)
 		
-		#3.- Configure Data source
-		J2EEPropertySetResource.__create__(self, update)
-		
-		#4.- Configure CMP Factory if needed
-		if not (self.__iscmp is None):
+        #3.- Configure connection pool
+        self.__pool.__create__(update)
+        
+		#4.- Configure Data source
+        J2EEPropertyHolderResource.__create__(self, update)
+        
+		#5.- Configure CMP Factory if needed
+        if not (self.__iscmp is None):
 			self.__cmpcf.authDataAlias = self.authDataAlias
 			self.__cmpcf.cmpDatasource = self.__getconfigid__()
 			if self.__iscmp:
@@ -168,7 +171,7 @@ class DataSource(J2EEPropertySetResource):
 		self.__auth.description = desc
 	
 	def getConnectionPool(self):
-		return ConnectionPool(self)
+		return self.__pool
 	
 	def isContainerManaged(self):
 		return self.__iscmp

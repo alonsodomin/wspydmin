@@ -139,7 +139,11 @@ class Resource(WasObject):
 		return type.from_str(value)
 	
 	def __getconfigid__(self):
-		return was_getconfigid(self.__id__)
+		id = was_getconfigid(self.__id__)
+		if (id is None) and hasattr(self, self.__parent_attrname__):
+			parent = getattr(self, self.__parent_attrname__)
+			id = parent.__getconfigid__()
+		return id
 	
 	def __hydrate__(self):
 		if not hasattr(self, '__wasattrmap'):

@@ -18,9 +18,10 @@
 import sys, copy
 
 from net.sf.wspydmin           import AdminConfig, AdminControl
+from net.sf.wspydmin.types     import was_type
 from net.sf.wspydmin.resources import Resource
 
-class J2EEPropertySetResource(Resource):
+class J2EEPropertyHolderResource(Resource):
 
 	def __init__(self):
 		Resource.__init__(self)
@@ -69,11 +70,16 @@ class J2EEPropertySetResource(Resource):
 			raise AttributeError, name
 		self.__propertySet.addProperty(name, value)
 
-class PropertySetResource(Resource):
+class PropertyHolderResource(Resource):
 	
 	def __init__(self):
 		Resource.__init__(self)
 		self.__properties = {}
+	
+	def __create__(self, update):
+		Resource.__create__(self, update)
+		for name, prop in self.__properties.items():
+			prop.__create__(update)
 	
 	def __getattr__(self, name):
 		try:
@@ -161,9 +167,10 @@ class J2EEResourceProperty(Resource):
 				return p
 		return None
 
-	def set(self, name, value):
-		self.name = name
-		self.value = value
+	def __setattr__(self, name, value):
+		if name == 'type':
+			value = was_type(value)
+		Resource.__setattr__(self, name, value)
 
 class J2EEResourcePropertySet(Resource):
 	DEF_ID    = '%(scope)sJ2EEResourcePropertySet:/'
@@ -180,12 +187,13 @@ class J2EEResourcePropertySet(Resource):
 			prop.__create__(update)
 	
 	def addProperty(self, name, value, type = None, required = None, desc = None):
-		p = J2EEResourceProperty(self)
-		p.set(name, value)
-		p.type               = type
-		p.required           = required
-		p.description        = desc
-		self.__propset[name] = p
+		property             = J2EEResourceProperty(self)
+		property.name        = name
+		property.value       = value
+		property.type        = type
+		property.required    = required
+		property.description = desc
+		self.__propset[name] = prop
 	
 	def getProperty(self, name, default = None):
 		try:

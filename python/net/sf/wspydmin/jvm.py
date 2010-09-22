@@ -17,9 +17,9 @@
 
 from net.sf.wspydmin            import AdminConfig, AdminControl
 from net.sf.wspydmin.resources  import Resource
-from net.sf.wspydmin.properties import Property
+from net.sf.wspydmin.properties import PropertyHolderResource
 
-class JavaVirtualMachine(Resource):
+class JavaVirtualMachine(PropertyHolderResource):
 	DEF_ID    = '/JavaVirtualMachine:/'
 	DEF_ATTRS = {
 			          'bootClasspath' : None,
@@ -40,18 +40,12 @@ class JavaVirtualMachine(Resource):
 	}
 	
 	def __init__(self, parent):
-		Resource.__init__(self)
+		self.__wassuper__()
 		self.parent     = parent
-		self.properties = {}
 	
 	def __postinit__(self):
-		Resource.__postinit__(self)
-		self.genericJvmArguments = AdminConfig.showAttribute(self.__getconfigid__(), 'genericJvmArguments').split()
-	
-	def __create__(self, update):
-		Resource.__create__(self, update)
-		for name, prop in self.properties.items():
-			prop.__create__(update)
+		self.__wassuper__.__postinit__()
+		#self.genericJvmArguments = AdminConfig.showAttribute(self.__getconfigid__(), 'genericJvmArguments').split()
 	
 	def __getconfigid__(self, id = None):
 		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
