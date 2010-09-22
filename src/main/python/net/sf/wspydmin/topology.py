@@ -20,7 +20,6 @@ import logging
 from java.lang                   import IllegalArgumentException, IllegalStateException
 
 from net.sf.wspydmin             import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.utils       import *
 from net.sf.wspydmin.resources   import Resource
 from net.sf.wspydmin.mbean       import MBean, ResourceMBean 
 from net.sf.wspydmin.listener    import MessageListenerService
@@ -29,6 +28,74 @@ from net.sf.wspydmin.web         import WebContainer
 from net.sf.wspydmin.transaction import TransactionService
 from net.sf.wspydmin.vars        import VariableSubstitutionEntryHelper
 from net.sf.wspydmin.jvm         import JavaVirtualMachine
+
+def isManagedServer(serverId): 
+    return (serverId.find('servers/ND') != -1) or (serverId.find('/servers/server1') != -1)
+
+def isAdminServer(serverId):
+    return (serverId.find('/servers/server1') != -1) or (serverId.find('/servers/dmgr') != -1)
+
+def isServerClustered(serverId):
+    """
+    Server is clustered if and only if server name is 'dmgr'. Otherwise is non clustered
+    """
+    return serverId.find('/servers/dmgr') != -1
+
+def isNodeAgentServer(serverId):
+    return serverId.find('/servers/nodeagent') != -1
+
+def isWebServer(serverId):
+    serverName = serverId.split('/servers/')[1].split('|')[0]
+    if ((serverName.find('web') != -1) or (serverName.find('WEB') != -1)):
+        return 1
+    else:
+        return 0
+
+def getServerName(serverId): 
+    return serverId.split('/servers/')[1].split('|')[0]
+    
+def getBusName(busId): 
+    return busId.split('/buses/')[1].split('|')[0]    
+
+def getClusterName(clusterId): 
+    return clusterId.split('/clusters/')[1].split('|')[0]
+
+def getNodeName(serverId): 
+    return serverId.split('nodes/')[1].split('/servers')[0]
+
+def getNodeId(serverId):
+    nodeName = getNodeName(serverId)
+    nodeList = AdminConfig.list('Node').splitlines()
+    nodeId = None
+    for node in nodeList:
+        if (node.find(nodeName) != -1): 
+            nodeId = node
+    return nodeId    
+
+def isAdminHost(serverPort): 
+    return serverPort.startswith('[WC_adminhost ')
+
+def isAdminHostSecure(serverPort): 
+    return serverPort.startswith('[WC_adminhost_secure ')
+
+def isDefaultHost(serverPort): 
+    return serverPort.startswith('[WC_defaulthost ')
+
+def getApplicationName(applicationDeploymentId): 
+    return applicationDeploymentId.split('deployments/')[1].split('|')[0]
+
+def getPort(serverPort):
+    return int(serverPort.split('[port ')[1].split('] [node')[0])
+
+def modifyServerPort(serverName, nodeName, endPointName, newPort):
+    print 'About to change server %s endpoint %s to new Port %s' % (serverName, endPointName, newPort)
+    opts = '[-nodeName %s -endPointName %s -host * -port %s -modifyShared true]' % (nodeName, endPointName, newPort)
+    AdminTask.modifyServerPort(serverName, opts)
+
+def changePorts(servers, endPointPorts):
+    for srvId in servers:
+        for endPointName, newPort in endPointPorts.items():
+            modifyServerPort(getServerName(srvId), getNodeName(srvId), endPointName, newPort)
 
 class Cell(Resource):
     DEF_ID    = '/Cell:%(name)s/'

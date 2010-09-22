@@ -15,6 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import logging
+
 from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
 from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.jdbc      import DataSource
@@ -52,7 +54,7 @@ class SIBus(SIResource):
 		
 	def __create__(self, update):    
 		params = self.__collectattrs__()
-		print "Configuring SIBus with attributes %s" % params
+		logging.info("Configuring SIBus with attributes %s" % params)
 		if update:
 			AdminTask.modifySIBus(params)
 		else:
@@ -62,7 +64,7 @@ class SIBus(SIResource):
 			busMember.__create__(update)
 	
 	def addApplicationServerAsBusMember(self, nodeName, serverName):
-		member = SIBusMember( self.bus )
+		member        = SIBusMember( self.bus )
 		member.node   = nodeName
 		member.server = serverName
 		self.addSIBusMember(member)
@@ -71,7 +73,7 @@ class SIBus(SIResource):
 		self.__busmembers.append(siBusMember)
 	
 	def addClusterServerAsBusMember(self, clusterName, storeType='file'):
-		member = SIBusMember( self.bus )
+		member         = SIBusMember( self.bus )
 		member.cluster = clusterName
 		
 		if (storeType=='file'):
@@ -85,12 +87,12 @@ class SIBus(SIResource):
 		self.addSIBusMember(member)
 	
 	def addServerAsBusMember(self, serverName):
-		member = SIBusMember( self.bus )
+		member        = SIBusMember( self.bus )
 		member.server = serverName
 		self.addSIBusMember(member)
     
 	def addWmqServerAsBusMember(self, wmqServerName):
-		member = SIBusMember( self.bus )
+		member           = SIBusMember( self.bus )
 		member.wmqServer = wmqServerName
 		self.addSIBusMember(member)
 	
@@ -152,17 +154,17 @@ class SIBusMember(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		print "Configuring SIBusMember with attributes %s" % params
+		logging.info( "Configuring SIBusMember with attributes %s" % params )
 		if update:
 			AdminTask.modifySIBusMember(params)
 		else:
 			AdminTask.addSIBusMember(params)
 	
 	def remove(self):
-		print >> sys.stderr, "WARN: SIBusMember.remove() not implemented. User SIBus.remove() instead."
+		logging.warning("SIBusMember.remove() not implemented. User SIBus.remove() instead.")
 
 	def removeAll(self):
-		print >> sys.stderr, "WARN: SIBusMember.removeAll() not implemented. User SIBus.removeAll() instead."
+		logging.warning("SIBusMember.removeAll() not implemented. User SIBus.removeAll() instead.")
 
 class SIBJMSConnectionFactory(SIResource):
 	DEF_ID    = '/SIBJMSConnectionFactory:%(name)s/'
@@ -210,7 +212,7 @@ class SIBJMSConnectionFactory(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		print "Configuring SIBJMSConnectionFactory under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params)
+		logging.info("Configuring SIBJMSConnectionFactory under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params))
 		if update:
 			AdminTask.modifySIBJMSConnectionFactory(self.__scope__, params)
 		else:
@@ -219,7 +221,7 @@ class SIBJMSConnectionFactory(SIResource):
 	def removeAll(self):
 		args  = '[ -type %s]' % self.type
 		for id in AdminTask.listSIBJMSConnectionFactories(self.__scope__, args).splitlines():
-			print "Deleting SIBJMSConnectionFactory %s" % id.split('(')[0]
+			logging.info("Deleting SIBJMSConnectionFactory %s" % id.split('(')[0]))
 			AdminTask.deleteSIBJMSConnectionFactory(id)
 
 class SIBJMSQueueConnectionFactory(SIBJMSConnectionFactory):
@@ -253,7 +255,7 @@ class SIBJMSTopic(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		print "Configuring SIBJMSTopic under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params)
+		logging.info("Configuring SIBJMSTopic under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params))
 		if update:
 			AdminTask.modifySIBJMSTopic(self.__scope__, params)
 		else:
@@ -261,7 +263,7 @@ class SIBJMSTopic(SIResource):
 	
 	def removeAll(self):
 		for id in AdminTask.listSIBJMSTopics(self.__scope__).splitlines():
-			print "Deleting SIBJMSTopic %s" % id.split('(')[0]
+			logging.info("Deleting SIBJMSTopic %s" % id.split('(')[0])
 			AdminTask.deleteSIBJMSTopic(id)
 
 class SIBDestination(SIResource):
@@ -319,7 +321,7 @@ class SIBJMSQueue(SIResource):
 			)
 		
 		params = self.__collectattrs__()
-		print "Configuring SIBJMSQueue under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params)
+		logging.info("Configuring SIBJMSQueue under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params))
 		if update:
 			AdminTask.modifySIBJMSQueue(self.__scope__, params)
 		else:
@@ -339,7 +341,7 @@ class SIBJMSQueue(SIResource):
 	
 	def removeAll(self):
 		for id in AdminTask.listSIBJMSQueues(self.__scope__).splitlines():
-			print "Deleting SIBJMSQueue %s" % id.split('(')[0]
+			logging.info("Deleting SIBJMSQueue %s" % id.split('(')[0])
 			AdminTask.deleteSIBJMSQueue(id)
 
 class SIBJMSActivationSpec(SIResource):
@@ -375,7 +377,7 @@ class SIBJMSActivationSpec(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		print "Configuring J2CActivationSpec under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params)
+		logging.info("Configuring J2CActivationSpec under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params))
 		if update:
 			AdminTask.modifySIBJMSActivationSpec(self.__scope__, params)
 		else:
@@ -383,5 +385,5 @@ class SIBJMSActivationSpec(SIResource):
 		
 	def removeAll(self):
 		for id in AdminConfig.list('J2CActivationSpec').splitlines():
-			print 'Deleting J2CActivationSpec %s' % id.split('(')[0]
+			logging.info('Deleting J2CActivationSpec %s' % id.split('(')[0])
 			AdminTask.deleteSIBJMSActivationSpec(id)

@@ -15,10 +15,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import sys, traceback
+import sys, traceback, logging
 
 from net.sf.wspydmin               import AdminConfig, AdminControl
 from net.sf.wspydmin.resources     import Resource
+
+def setClassLoader(appname, mode='PARENT_LAST', policy='SINGLE'):
+	logging.info("Setting '%s' application classloader to mode '%s' and warClassLoaderPolicy '%s'" % (appname, mode, policy))
+    dep = AdminConfig.getid('/Deployment:%s/' % appname)
+    depObject = AdminConfig.showAttribute(dep, 'deployedObject')
+    classldr = AdminConfig.showAttribute(depObject, 'classloader')
+    #
+    AdminConfig.modify(classldr, [['mode', mode]])
+    AdminConfig.modify(depObject, [['warClassLoaderPolicy', policy]])
 
 class ClassLoader(Resource):
 	DEF_ID    = '/Classloader:/'
@@ -28,16 +37,21 @@ class ClassLoader(Resource):
 
 	def __init__(self, targetResourceName):
 		self.targetResourceName = targetResourceName
+		self.__wasid            = None
 		
 	def __getconfigid__(self):
+		if not self.__wasid is None:
+			return self.__wasid
+		
 		for targetName, id in map(
 			lambda x: [x.split('|')[0].split('/')[-1], x],
 			AdminConfig.list(self.__wastype__).splitlines()
 		):
 			if targetName == self.targetResourceName:
-				return id
+				self.__wasid = id
+				break
 		
-		return None
+		return self.__wasid
 	
 	def setParentFirstMode(self):
 		self.mode = 'PARENT_FIRST'

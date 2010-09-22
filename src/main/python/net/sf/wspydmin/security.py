@@ -15,7 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin           import AdminConfig, AdminControl
+import logging
+
+from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
 from net.sf.wspydmin.topology  import Cell
 from net.sf.wspydmin.resources import Resource
 
@@ -250,3 +252,28 @@ class TransportQOP(Resource):
 	
 	def __remove__(self, deep):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+
+#
+# Security utilities
+#
+
+def installSignerCertificateInKeyStore(certFileName, keyStoreName):
+	"""Installs a certificate file into the WebSphere's key store"""
+    certFileLocation = certFileName
+	logging.info('Preparing installation of certificate %s from file %s into store %s' % (certFileName, certFileLocation, keyStoreName))
+    AdminTask.addSignerCertificate(['-keyStoreName', keyStoreName, '-certificateAlias', 
+		'customcert_' + certFileName, '-certificateFilePath', certFileLocation, '-base64Encoded', 'true'])
+	logging.info('certificate %s is installed in keystore %s' % (certFileName, keyStoreName))
+
+def deleteCustomSignerCertificatesFromKeyStore(keyStoreName):
+	"""Removes the custom certificates installed into the WebSphere's key store"""
+	logging.info('Preparing removal of custom certificates from store %s' % (keyStoreName))
+
+    certificateList = AdminTask.listSignerCertificates(['-keyStoreName', keyStoreName]).splitlines()
+    for certificate in certificateList:
+        certAlias = certificate.split('] [alias')[1].split('] [validity')[0]
+        if (certAlias.find('customcert_') != -1):
+            AdminTask.deleteSignerCertificate(['-keyStoreName', keyStoreName, '-certificateAlias', certAlias])
+			logging.info('Certificate %s has been deleted' % (certAlias))
+        else:
+			logging.info('Certificate %s will not be deleted' % (certAlias))
