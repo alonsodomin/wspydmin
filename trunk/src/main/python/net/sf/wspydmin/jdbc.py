@@ -136,7 +136,7 @@ class DataSource(J2EEPropertyHolderResource):
         J2EEPropertyHolderResource.__create__(self, update)
         
 		#5.- Configure CMP Factory if needed
-        if not (self.__iscmp is None):
+        if not (self.__iscmp is None) and not (self.__cmpcf is None):
 			self.__cmpcf.authDataAlias = self.authDataAlias
 			self.__cmpcf.cmpDatasource = self.__getconfigid__()
 			if self.__iscmp:

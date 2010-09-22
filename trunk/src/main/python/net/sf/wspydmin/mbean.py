@@ -35,7 +35,7 @@ class MBeanHelper(WasObjectHelper):
     
     def __helperinit__(self, klass):
         WasObjectHelper.__helperinit__(self, klass)
-        self.__methods = copy.copy(getattr(klass, 'DEF_MTHDS'))
+        self.__methods = copy.copy(getattr(klass, 'DEF_METHODS'))
 
     def __getmbeanid__(self):
         if hasattr(self, 'name') and hasattr(self, 'nodeName') and hasattr(self, 'serverName'):

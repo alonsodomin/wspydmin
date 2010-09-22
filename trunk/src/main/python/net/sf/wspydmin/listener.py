@@ -96,7 +96,7 @@ class ListenerPort(ResourceMBean):
                   'stateManagement' : None,
                'statisticsProvider' : None
 	}
-	DEF_MTHDS  = [ 'start', 'stop' ]
+	DEF_METHODS  = [ 'start', 'stop' ]
 	
 	DEF_INITIAL = 'START'
 	
