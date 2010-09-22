@@ -24,7 +24,7 @@ from com.ibm.websphere.management.exception        import AdminException
 from com.ibm.ws.scripting                          import ScriptingException
 
 from net.sf.wspydmin                               import AdminConfig, AdminControl
-from net.sf.wspydmin.admin                         import Cell
+from net.sf.wspydmin.topology                      import Cell
 from net.sf.wspydmin.pool                          import ConnectionPool
 from net.sf.wspydmin.resources                     import Resource
 from net.sf.wspydmin.security                      import JAASAuthData

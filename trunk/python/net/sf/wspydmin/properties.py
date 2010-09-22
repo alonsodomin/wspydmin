@@ -81,6 +81,14 @@ class PropertyHolderResource(Resource):
 		for name, prop in self.__properties.items():
 			prop.__create__(update)
 	
+	def __collectattrs__(self):
+		attrs = self.__wassuper__.__collectattrs__(self)
+		props = []
+		for name, prop in self.__properties__.items():
+			props.append( [ name, prop.value ] )
+		attrs.append( props )
+		return attrs
+	
 	def __getattr__(self, name):
 		try:
 			return Resource.__getattr__(self, name)

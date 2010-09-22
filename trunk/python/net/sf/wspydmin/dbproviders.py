@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin.admin     import Cell
+from net.sf.wspydmin.topology  import Cell
 from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.jdbc      import JDBCProvider, DataSource
 
