@@ -21,7 +21,7 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.pool       import ConnectionPool
 
 class JMSProvider(Resource):
-	DEF_ID    = '/JMSProvider:%(name)s/'
+	DEF_ID    = '%(scope)sJMSProvider:%(name)s/'
 	DEF_ATTRS = {
 				'name' : None
 	}
@@ -38,7 +38,7 @@ class MQJMSProvider(JMSProvider):
 		JMSProvider.__init__(self, MQJMSProvider.JMS_PROVIDER_NAME, parent)
 
 class MQQueueConnectionFactory(Resource):
-	DEF_ID    = '/MQQueueConnectionFactory:%(name)s/'
+	DEF_ID    = '%(scope)sMQQueueConnectionFactory:%(name)s/'
 	DEF_TPL   = 'Example non-XA WMQ QueueConnectionFactory'
 	DEF_ATTRS = {
                     'name' : None,

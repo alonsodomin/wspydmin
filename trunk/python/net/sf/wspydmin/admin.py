@@ -199,6 +199,9 @@ class Server(ResourceMBean):
 		self.nodeName   = getNodeName(serverId)
 		self.serverName = getServerName(serverId)
 		self.parent     = parent
+		
+		self.__jvm      = JavaVirtualMachine(self)
+		self.__listener = MessageListenerService(self)
 	
 	def addApplicationFirstClassLoader(self):
 		classLoaderIds = AdminConfig.list('Classloader',self.__getconfigid__()).splitlines()
@@ -223,10 +226,10 @@ class Server(ResourceMBean):
 		return AdminConfig.list('ApplicationServer', self.__getconfigid__()).splitlines()[0]
 	
 	def getJavaVirtualMachine(self):
-		return JavaVirtualMachine(self)
+		return self.__jvm
 	
 	def getMessageListenerService(self):
-		return MessageListenerService(self)
+		return self.__listener
 	
 	def getProfileRootPath(self):
 		vAdm = VariableSubstitutionEntryHelper()

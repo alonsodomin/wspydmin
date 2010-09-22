@@ -180,7 +180,9 @@ class WasBooleanDataType(WasDataType):
 		Transforms a python boolean (a int) into a boolean string
 		@param value: a python boolean
 		"""
-		if value: return 'true'
+		if type("") == type(value):
+			return self.from_str(value)
+		elif value: return 'true'
 		else:     return 'false'
 
 class WasIntegerDataType(WasDataType):

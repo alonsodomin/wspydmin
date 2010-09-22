@@ -92,7 +92,7 @@ class LibraryRef(Resource):
 	}
 	
 	def __init__(self, library, targetResourceName):
-		self.__wassuper__(self)
+		self.__wassuper__()
 		self.libraryName        = library.name
 		self.targetResourceName = targetResourceName
 		
@@ -111,12 +111,5 @@ class LibraryRef(Resource):
 			libName = AdminConfig.showAttribute(librefId, 'libraryName')
 			if (libName == self.libraryName and librefId.find(self.targetResourceName)!=-1 ):
 				return librefId
-        
 		return None
-	
-	def enableSharedClassloader(self):
-		self.sharedClassloader = 1
-    
-	def disableSharedClassloader(self):
-		self.sharedClassloader = 0
 

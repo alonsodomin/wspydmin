@@ -39,7 +39,7 @@ class ObjectRequestBroker(Resource):
 		Resource.__init__(self)
 		self.parent = parent
 	
-	def __getconfigid__(self, id = None):
+	def __getconfigid__(self):
 		return AdminConfig.getid(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def getThreadPool(self):

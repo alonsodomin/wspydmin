@@ -29,10 +29,11 @@ class WebContainer(Resource):
 	
 	def __init__(self, parent):
 		Resource.__init__(self)
-		self.parent = parent
+		self.parent        = parent
+		self.__sessionmngr = SessionManager(self)
 	
 	def __getconfigid__(self, id = None):
 		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def getSessionManager(self):
-		return SessionManager(self)
+		return self.__sessionmngr
