@@ -34,4 +34,52 @@
 	<description><![CDATA[
 		Administrative WebSphere library. Designed as a foundation library (providing a wsadmin.sh wrapper) following Object Oriented approach for WebSphere administrators who are used to develop Python scripts to do WebSphere adrministrative tasks.
 	]]></description>
+	
+	<prerequisites>
+		<maven>2.0.8</maven>
+	</prerequisites>
+
+	<organization>
+		<name>SourceForge.net</name>
+		<url>http://www.sourceforge.net</url>
+	</organization>
+	
+	<licenses>
+		<license>
+			<name>Lesser General Public License</name>
+			<url>http://www.opensource.org/licenses/lgpl-3.0.html</url>
+		</license>
+	</licenses>
+	
+	<issueManagement>
+		<system>SourceForge.net</system>
+		<url>https://sourceforge.net/tracker/?group_id=334334</url>
+	</issueManagement>
+	
+	<scm>
+		<connection>scm:svn:https://wspydmin.svn.sourceforge.net/svnroot/wspydmin/trunk</connection>
+		<developerConnection>scm:svn:https://wspydmin.svn.sourceforge.net/svnroot/wspydmin/trunk</developerConnection>
+		<url>http://wspydmin.svn.sourceforge.net/viewvc/wspydmin/trunk</url>
+	</scm>
+	
+	<developers>
+		<developer>
+			<id>alonsoft</id>
+			<name>A. Alonso Dominguez</name>
+			<email>alonsoft@users.sf.net</email>
+			<roles>
+				<role>Project Manager</role>
+				<role>Developer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+
+	<distributionManagement>
+		<site>
+			<id>wspydmin.web.sourceforge.net</id>
+			<name>WSPydmin Website</name>
+			<url>scp://web.sourceforge.net/home/groups/w/ws/wspydmin/htdocs</url>
+		</site>
+	</distributionManagement>
 </project>
