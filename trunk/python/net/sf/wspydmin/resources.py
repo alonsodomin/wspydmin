@@ -41,12 +41,12 @@ class Resource(WasObject):
 			raise AbstractResourceError, self.__wastype__
 
 		try:	
-			self.__wasattrmap__ = copy.copy(getattr(self, Resource.ATTR_ATTRS))
+			self.__wasattrmap = copy.copy(getattr(self, Resource.ATTR_ATTRS))
 		except AttributeError:
-			self.__wasattrmap__ = {}
+			self.__wasattrmap = {}
 		
 		# Container for attribute data types
-		self.__wastypemap__ = {}		
+		self.__wastypemap = {}		
 		
 	def __postinit__(self):
 		attrdef = AdminConfig.attributes(self.__wastype__)
@@ -54,7 +54,7 @@ class Resource(WasObject):
 			for atype in attrdef.splitlines():
 				name = atype.split()[0]
 				value = atype.split()[1]			
-				self.__wastypemap__[name] = was_type(value)
+				self.__wastypemap[name] = was_type(value)
 		
 		self.__hydrate__()
 		if self.exists():
@@ -85,24 +85,24 @@ class Resource(WasObject):
 			logging.info("Created '%s' resource under scope '%s' using attrs: %s" % (self.__wastype__, scope.split('/')[-1].split('|')[0], attributes))
 	
 	def __collectattrs__(self):
-		return [ [label, self.__flatattr__(label, value) ] for label, value in self.__wasattrmap__.items() if not value is None ]
+		return [ [label, self.__flatattr__(label, value) ] for label, value in self.__wasattrmap.items() if not value is None ]
 	
 	def __getattr__(self, name):
 		try:
 			return WasObject.__getattr__(self, name)
 		except AttributeError:
-			if self.__wasattrmap__.has_key(name):
-				val = self.__wasattrmap__[name]
+			if self.__wasattrmap.has_key(name):
+				val = self.__wasattrmap[name]
 				if val == '': val = None
 				return val
 			else:
 				raise AttributeError, name
 	
 	def __setattr__(self, name, value):
-		if hasattr(self, '__wasattrmap__') and getattr(self, '__wasattrmap__').has_key(name):
+		if hasattr(self, '__wasattrmap') and getattr(self, '__wasattrmap').has_key(name):
 			if type("") == type(value):
 				value = self.__parseattr__(name, value)
-			self.__wasattrmap__[name] = value
+			self.__wasattrmap[name] = value
 		else:
 			WasObject.__setattr__(self, name, value)
 	
@@ -113,45 +113,45 @@ class Resource(WasObject):
 				attr = attr[1:-1]               # Drop '[' and ']' from attribute string
 			name = attr.split(None, 1)[0]
 			if not skip_attrs.contains(name):
-				self.__wasattrmap__[name] = self.__parseattr__(name, attr.split(None, 1)[1])
+				self.__wasattrmap[name] = self.__parseattr__(name, attr.split(None, 1)[1])
 	
 	def __loaddefaults__(self): 
 		pass
 	
 	def __dumpattrs__(self):
 		str = ''
-		if hasattr(self, '__wasattrmap__') and hasattr(self, '__wastypemap__'):
-			for name, value in self.__wasattrmap__.items():
+		if hasattr(self, '__wasattrmap') and hasattr(self, '__wastypemap'):
+			for name, value in self.__wasattrmap.items():
 				value = self.__flatattr__(name, value)
-				str = str + ("\t(%s) %s = %s\n" % (self.__wastypemap__[name], name, value))
+				str = str + ("\t(%s) %s = %s\n" % (self.__wastypemap[name], name, value))
 		return str
 	
 	def __flatattr__(self, name, value):
-		if not self.__wastypemap__.has_key(name):
+		if not self.__wastypemap.has_key(name):
 			raise AttributeError, "attribute '%s' can't be flattened since no type has been found" % name
-		type = self.__wastypemap__[name]
+		type = self.__wastypemap[name]
 		return type.to_str(value)
 	
 	def __parseattr__(self, name, value):
-		if not self.__wastypemap__.has_key(name):
+		if not self.__wastypemap.has_key(name):
 			raise AttributeError, "attribute '%s' can't be parsed since no type has been found" % name
-		type = self.__wastypemap__[name]
+		type = self.__wastypemap[name]
 		return type.from_str(value)
 	
 	def __getconfigid__(self):
 		return was_getconfigid(self.__id__)
 	
 	def __hydrate__(self):
-		if not hasattr(self, '__wasattrmap__'):
+		if not hasattr(self, '__wasattrmap'):
 			raise IllegalStateException, "WAS resource unproperly initialized"
 		
 		# Collect public WAS attributes
 		mydict = {}
 		map(
-			lambda x: mydict.__setitem__(x, self.__wasattrmap__[x]),
+			lambda x: mydict.__setitem__(x, self.__wasattrmap[x]),
 			filter(
-				lambda x: (not x.startswith('__') and not x.endswith('__')),
-				self.__wasattrmap__.keys()
+				lambda x: (not x.startswith('__')),
+				self.__wasattrmap.keys()
 			)
 		)
 		

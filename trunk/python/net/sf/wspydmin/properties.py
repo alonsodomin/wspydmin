@@ -25,19 +25,19 @@ class J2EEPropertySetResource(Resource):
 	def __init__(self):
 		Resource.__init__(self)
 		if hasattr(self, 'DEF_PROPS'):
-			self.__defaults__    = copy.copy(getattr(self, 'DEF_PROPS'))
+			self.__defaults = copy.copy(getattr(self, 'DEF_PROPS'))
 		else:
-			self.__defaults__ = {}
-		self.__propertySet__ = J2EEResourcePropertySet(self)
+			self.__defaults = {}
+		self.__propertySet = J2EEResourcePropertySet(self)
 	
 	def __create__(self, update):
 		Resource.__create__(self, update)
-		self.__propertySet__.update()
+		self.__propertySet.update()
 		
 	def __dumpattrs__(self):
 		str = Resource.__dumpattrs__(self)
-		if hasattr(self, '__propertySet__'):
-			for name, prop in self.__propertySet__.properties():
+		if hasattr(self, '__propertySet'):
+			for name, prop in self.__propertySet.properties():
 				str = str + ("\t(%s) %s = %s\n" % (prop.type, prop.name, prop.value))
 		return str
 	
@@ -45,47 +45,47 @@ class J2EEPropertySetResource(Resource):
 		try:
 			return Resource.__getattr__(self, name)
 		except AttributeError:
-			if hasattr(self, '__propertySet__'):
+			if hasattr(self, '__propertySet'):
 				return self.getProperty(name)
 			else:
 				raise AttributeError, name
 	
 	def __setattr__(self, name, value):
-		if not hasattr(self, '__propertySet__'):
+		if not hasattr(self, '__propertySet'):
 			Resource.__setattr__(self, name, value)
 		else:
-			if self.__defaults__.has_key(name):
+			if self.__defaults.has_key(name):
 				self.setProperty(name, value)
 			else:
 				Resource.__setattr__(self, name, value)
 	
 	def getProperty(self, name):
-		if not self.__defaults__.has_key(name):
+		if not self.__defaults.has_key(name):
 			raise AttributeError, name
-		return self.__propertySet__.getProperty(name, self.__defaults__[name])
+		return self.__propertySet.getProperty(name, self.__defaults[name])
 	
 	def setProperty(self, name, value):
-		if not self.__defaults__.has_key(name):
+		if not self.__defaults.has_key(name):
 			raise AttributeError, name
-		self.__propertySet__.addProperty(name, value)
+		self.__propertySet.addProperty(name, value)
 
 class PropertySetResource(Resource):
 	
 	def __init__(self):
 		Resource.__init__(self)
-		self.__properties__ = {}
+		self.__properties = {}
 	
 	def __getattr__(self, name):
 		try:
 			return Resource.__getattr__(self, name)
 		except AttributeError:
-			if hasattr(self, '__properties__'):
-				if self.__properties.__has_key(name):
-					return self.__properties__[name].value
+			if hasattr(self, '__properties'):
+				if self.__properties.has_key(name):
+					return self.__properties[name].value
 			raise AttributeError, name
 	
 	def __setattr__(self, name, value):
-		if not hasattr(self, '__properties__'):
+		if not hasattr(self, '__properties'):
 			Resource.__setattr__(self, name, value)
 		else:
 			try:
@@ -97,8 +97,8 @@ class PropertySetResource(Resource):
 	
 	def __dumpattrs__(self):
 		str = Resource.__dumpattrs__(self)
-		if hasattr(self, '__properties__'):
-			for prop in self.__properties__.values():
+		if hasattr(self, '__properties'):
+			for prop in self.__properties.values():
 				str = str + ("\t(unknown) %s = %s\n" % (prop.name, prop.value))
 		return str
 
@@ -108,17 +108,17 @@ class PropertySetResource(Resource):
 		prop.description          = description
 		prop.required             = required
 		prop.validationExpression = validationExpr
-		self.__properties__[name] = prop
+		self.__properties[name]   = prop
 		
 	def getProperty(self, name):
-		if not self.__properties__.has_key(name):
+		if not self.__properties.has_key(name):
 			raise AttributeError, name
-		return self.__properties__[name]
+		return self.__properties[name]
 	
 	def setProperty(self, name, value):
-		if not self.__properties__.has_key(name):
+		if not self.__properties.has_key(name):
 			raise AttributeError, name
-		self.__properties__[name].value = value
+		self.__properties[name].value = value
 
 class Property(Resource):
 	DEF_ID    = '%(scope)sProperty:%(name)s/'
@@ -137,7 +137,7 @@ class Property(Resource):
 	
 	def __getconfigid__(self):
 		for pid in AdminConfig.list(Property.__wastype__, self.parent.__getconfigid__()).splitlines():
-			if pid.startswith(self.__wasattrmap__['name']):
+			if pid.startswith(self.name):
 				return pid
 		return None
 
@@ -157,7 +157,7 @@ class J2EEResourceProperty(Resource):
 	
 	def __getconfigid__(self):
 		for p in AdminConfig.getid(self.__id__).splitlines():
-			if self.__wasattrmap__['name'] == p.split('(')[0]:
+			if self.name == p.split('(')[0]:
 				return p
 		return None
 
@@ -171,27 +171,27 @@ class J2EEResourcePropertySet(Resource):
 
 	def __init__(self, parent):
 		Resource.__init__(self)
-		self.__propset__ = {} # A hash as a container for the J2EE Properties
-		self.parent      = parent
+		self.__propset = {} # A hash as a container for the J2EE Properties
+		self.parent    = parent
 	
 	def __create__(self, update):
 		Resource.__create__(self, update)
-		for name, prop in self.__propset__.items():
+		for name, prop in self.__propset.items():
 			prop.__create__(update)
 	
 	def addProperty(self, name, value, type = None, required = None, desc = None):
 		p = J2EEResourceProperty(self)
 		p.set(name, value)
-		p.type = type
-		p.required = required
-		p.description = desc
-		self.__propset__[name] = p
+		p.type               = type
+		p.required           = required
+		p.description        = desc
+		self.__propset[name] = p
 	
 	def getProperty(self, name, default = None):
 		try:
-			return self.__propset__[name].value
+			return self.__propset[name].value
 		except KeyError:
 			return default
 	
 	def properties(self):
-		return copy.copy(self.__propset__)
+		return copy.copy(self.__propset)

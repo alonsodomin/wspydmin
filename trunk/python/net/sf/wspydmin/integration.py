@@ -46,9 +46,9 @@ class SIBus(SIResource):
 	
 	def __init__(self, name, parent = Cell()):
 		SIResource.__init__(self)
-		self.bus            = name
-		self.parent         = parent
-		self.__busmembers__ = []
+		self.bus          = name
+		self.parent       = parent
+		self.__busmembers = []
 		
 	def __create__(self, update):    
 		params = self.__collectattrs__()
@@ -58,17 +58,17 @@ class SIBus(SIResource):
 		else:
 			AdminTask.createSIBus(params)
         
-		for busMember in self.__busmembers__:
+		for busMember in self.__busmembers:
 			busMember.__create__(update)
 	
 	def addApplicationServerAsBusMember(self, nodeName, serverName):
 		member = SIBusMember( self.bus )
 		member.node   = nodeName
 		member.server = serverName
-		self.__busmembers__.append( member )
+		self.addSIBusMember(member)
 	
 	def addSIBusMember(self, siBusMember):
-		self.__busmembers__.append(siBusMember)
+		self.__busmembers.append(siBusMember)
 	
 	def addClusterServerAsBusMember(self, clusterName, storeType='file'):
 		member = SIBusMember( self.bus )
@@ -82,17 +82,17 @@ class SIBus(SIResource):
 		else:
 			raise NotImplementedException('please implement the Datastore feature for cluster bus members')
         
-		self.__busmembers__.append( member )
+		self.addSIBusMember(member)
 	
 	def addServerAsBusMember(self, serverName):
 		member = SIBusMember( self.bus )
 		member.server = serverName
-		self.__busmembers__.append( member )
+		self.addSIBusMember(member)
     
 	def addWmqServerAsBusMember(self, wmqServerName):
 		member = SIBusMember( self.bus )
 		member.wmqServer = wmqServerName
-		self.__busmembers__.append( member )
+		self.addSIBusMember(member)
 	
 	def remove(self):
 		for busMemberId in AdminConfig.showAttribute(self.__getconfigid__(), 'busMembers')[1:-1].splitlines():
@@ -334,10 +334,8 @@ class SIBJMSQueue(SIResource):
 				self.cluster = clusterName
 		else:
 			managedServerId = cell.getManagedServers()[0]
-			serverName  = getServerName(managedServerId)
-			nodeName    = getNodeName(managedServerId)
-			self.server = serverName
-			self.node   = nodeName
+			self.server     = getServerName(managedServerId)
+			self.node       = getNodeName(managedServerId)
 	
 	def removeAll(self):
 		for id in AdminTask.listSIBJMSQueues(self.__scope__).splitlines():

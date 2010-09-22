@@ -19,6 +19,34 @@ import copy, types
 
 from java.lang import IllegalArgumentException
 
+__WAS_DATATYPES = {
+}
+
+__WAS_OBJECT_CLASSES = {
+}
+
+def was_define_type(typename, typeclass):
+	if __WAS_DATATYPES.has_key(typename):
+		raise WasDataTypeError, 'Type already registered: %s' % typename
+	__WAS_DATATYPES[typename] = typeclass()
+
+def was_define_class(klass):
+	if __WAS_OBJECT_CLASSES.has_key(klass.__name__):
+		raise WasDataTypeError, 'Object class already registered: %s' % klass.__name__
+	__WAS_OBJECT_CLASSES[klass.__name__] = klass
+
+def was_type(typename):
+	if (typename == '') or (typename is None): return None
+	if typename.endswith('*'):
+		typename = typename[0:-1]
+		return WasArrayDataType(was_type(typename))
+	elif __WAS_DATATYPES.has_key(typename):
+		return __WAS_DATATYPES[typename]
+	else:
+		if not __WAS_OBJECT_CLASSES.has_key(typename):
+			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
+		return WasObjectDataType(__WAS_OBJECT_CLASSES[typename])
+
 ########################################################################
 ##                         WebSphere types                            ##
 ########################################################################
@@ -212,37 +240,7 @@ class WasObjectDataType(WasDataType):
 		if value is None: return ''
 		return self.klass.__getconfigid__(value)
 
-
-__WAS_DATATYPES = {
-	"""
-	Data type map used internally for resolving WebSphere types
-	"""
-	WasBooleanDataType.TYPENAME : WasBooleanDataType(),
-	WasIntegerDataType.TYPENAME : WasIntegerDataType(),
-	WasStringDataType.TYPENAME  : WasStringDataType()
-}
-
-__WAS_OBJECT_CLASSES = {
-}
-
-def was_define_type(typename, typeclass):
-	if __WAS_DATATYPES.has_key(typename):
-		raise WasDataTypeError, 'Type already registered: %s' % typename
-	__WAS_DATATYPES[typename] = typeclass
-
-def was_define_class(klass):
-	if __WAS_OBJECT_CLASSES.has_key(klass.__name__):
-		raise WasDataTypeError, 'Object class already registered: %s' % klass.__name__
-	__WAS_OBJECT_CLASSES[klass.__name__] = klass
-
-def was_type(typename):
-	if (typename == '') or (typename is None): return None
-	if typename.endswith('*'):
-		typename = typename[0:-1]
-		return WasArrayDataType(was_type(typename))
-	elif __WAS_DATATYPES.has_key(typename):
-		return __WAS_DATATYPES[typename]
-	else:
-		if not __WAS_OBJECT_CLASSES.has_key(typename):
-			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
-		return WasObjectDataType(typename, __WAS_OBJECT_CLASSES[typename])
+# Define WebSphere types
+was_define_type(WasBooleanDataType.TYPENAME, WasBooleanDataType)
+was_define_type(WasIntegerDataType.TYPENAME, WasIntegerDataType)
+was_define_type(WasStringDataType.TYPENAME, WasStringDataType)

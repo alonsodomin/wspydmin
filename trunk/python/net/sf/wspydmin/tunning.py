@@ -63,18 +63,18 @@ class SessionManager(Resource):
 		Resource.__init__(self)
 		self.parent      = parent
 		#self.__tunning__ = TunningParams(self.parent)
-		self.__tunning__ = TunningParams(self)
+		self.__tunning = TunningParams(self)
 
 	def __postinit__(self):
 		Resource.__postinit__(self)
-		self.tunningParams = self.__tunning__.__getconfigid__()
+		self.tunningParams = self.__tunning.__getconfigid__()
 
 	def __getconfigid__(self, id = None):
 		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
 
 	def __getattr__(self, name):
 		if (name == 'tunningParams'):
-			return self.__tunning__
+			return self.__tunning
 		else:
 			return Resource.__getattr__(self, name)
 	
