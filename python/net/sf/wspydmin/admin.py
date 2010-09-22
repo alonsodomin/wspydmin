@@ -27,7 +27,7 @@ from net.sf.wspydmin.listener    import MessageListenerService
 from net.sf.wspydmin.orb         import ObjectRequestBroker
 from net.sf.wspydmin.web         import WebContainer
 from net.sf.wspydmin.transaction import TransactionService
-from net.sf.wspydmin.vars        import VariableSubstitutionEntry
+from net.sf.wspydmin.vars        import VariableSubstitutionEntryHelper
 from net.sf.wspydmin.jvm         import JavaVirtualMachine
 
 class Cell(Resource):
@@ -37,7 +37,8 @@ class Cell(Resource):
 	}
 	
 	def __init__(self, name = AdminControl.getCell()):
-		self.name   = name
+		self.name      = name
+		self.__servers = []
 
 	def __create__(self, update):
 		raise NotImplementedError, "Can't create or update a cell by this call"
@@ -51,26 +52,34 @@ class Cell(Resource):
 	def __getserverids__(self):
 		return AdminConfig.list('Server', self.__id__).splitlines()
 
-	def getName(self):
-		return self.name
+	def __loadattrs__(self, skip_attrs = []):
+		Resource.__loadattrs__(self, skip_attrs)
+		if not self.exists(): return
+		for serverId in AdminConfig.list('Server', self.__id__).splitlines():
+			server = None
+			if isNodeAgentServer(serverId):
+				server = NodeAgent(serverId, self)
+			else:
+				server = Node(serverId, self)
+			self.__servers.append(server)
 	
 	def getServers(self):
-		return map(Server, self.__getserverids__())
+		return self.__servers
     
 	def getWebServers(self):
-		return map(Server, filter(isWebServer, self.__getserverids__()))
+		return filter(lambda x: x.isWebServer(), self.__servers)
     
 	def getAdminServers(self):
-		return map(Server, filter(isAdminServer, self.__getserverids__()))
+		return filter(lambda x: x.isAdminServer(), self.__servers)
     
-	def getManagedServers(self):        
-		return map(Server, filter(isManagedServer, self.__getserverids__()))
+	def getManagedServers(self):
+		return filter(lambda x: x.isManagedServer(), self.__servers)        
     
 	def getNodeAgentServers(self):
 		return map(NodeAgent, filter(isNodeAgentServer, AdminConfig.list('Server').splitlines()))
 
 	def isClustered(self):
-		return len(filter(isServerClustered, self.getAdminServers()))
+		return len(filter(lambda x: x.isClustered(), self.getAdminServers()))
     
 	def getAdminhostPort(self): 
 		srv  = map(getServerName, self.getAdminServers())[0]
@@ -184,10 +193,10 @@ class Server(ResourceMBean):
 	DEF_ID    = '%(scope)sServer:%(serverName)s/'
 	DEF_ATTRS = {}
 	
-	def __init__(self, serverId, parent = Cell()):
+	def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
 		ResourceMBean.__init__(self)
 		self.serverId   = serverId
-		self.nodeName   = serverId.split('nodes/')[1].split('/servers')[0]
+		self.nodeName   = getNodeName(serverId)
 		self.serverName = getServerName(serverId)
 		self.parent     = parent
 	
@@ -220,7 +229,7 @@ class Server(ResourceMBean):
 		return MessageListenerService(self)
 	
 	def getProfileRootPath(self):
-		vAdm = VariableSubstitutionEntry()
+		vAdm = VariableSubstitutionEntryHelper()
 		return vAdm.getVariableValue('USER_INSTALL_ROOT' , getNodeId(self.__getconfigid__()) )
 	
 	def getObjectRequestBroker(self):
@@ -249,6 +258,9 @@ class Server(ResourceMBean):
 	def isAdminServer(self):
 		return isAdminServer(self.serverId)
 	
+	def isClustered(self):
+		return isServerClustered(self.serverId)
+	
 	def isManagedServer(self):
 		return isManagedServer(self.serverId)
 	
@@ -264,7 +276,7 @@ class NodeAgent(Server):
 		#self.nodeName = getNodeName(serverId)
 
 	def __getmbeanid__(self):
-		queryResult = AdminControl.queryNames('cell=%s,processType=NodeAgent,process=nodeagent,node=%s,*' % (AdminControl.getCell(), self.nodeName))
+		queryResult = AdminControl.queryNames('cell=%s,processType=NodeAgent,process=nodeagent,node=%s,*' % (self.parent.name, self.nodeName))
 		if (queryResult != ''):
 			return queryResult.splitlines()[0]
 		else:
@@ -272,8 +284,8 @@ class NodeAgent(Server):
 
 class Node(Server):
 
-	def __init__(self, serverId = AdminControl.getNode()):
-		Server.__init__(self, serverId)
+	def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
+		Server.__init__(self, serverId, parent)
 
 def getBasePort(cell = Cell()):
 	port = cell.getAdminhostPort()

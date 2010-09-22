@@ -65,17 +65,17 @@ class IIOPSecurityProtocol(Resource):
 	
 	def __init__(self, wasid, parent = Security()):
 		Resource.__init__(self)
-		self.__wasid__ = wasid
-		self.inbound   = self.getInboundConfiguration()
-		self.outbound  = self.getOutboundConfiguration()
-		self.parent    = parent
+		self.__wasid  = wasid
+		self.inbound  = self.getInboundConfiguration()
+		self.outbound = self.getOutboundConfiguration()
+		self.parent   = parent
 		
 	def __create__(self, update):
 		self.inbound.__create__(update)
 		self.outbound.__create__(update)
 	
 	def __getconfigid__(self):
-		return self.__wasid__
+		return self.__wasid
 	
 	def __loadattrs__(self):
 		Resource.__loadattrs__(self)
@@ -106,7 +106,7 @@ class CommonSecureInterop(Resource):
 	
 	def __init__(self, wasid, parent):
 		Resource.__init__(self)
-		self.__wasid__      = wasid
+		self.__wasid        = wasid
 		self.messageLayer   =  self.getMessageLayer()
 		self.transportLayer =  self.getTransportLayer()
 		self.parent         = parent
@@ -116,7 +116,7 @@ class CommonSecureInterop(Resource):
 		self.transportLayer.__create__(update)
 	
 	def __getconfigid__(self):
-		return self.__wasid__
+		return self.__wasid
 	
 	def __remove__(self, deep):
 		NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
@@ -156,8 +156,8 @@ class Layer(Resource):
 	
 	def __init__(self, wasid, parent):
 		Resource.__init__(self)
-		self.__wasid__ = wasid
-		self.parent    = parent
+		self.__wasid = wasid
+		self.parent  = parent
 		
 	def __getattr__(self, name):
 		if (name in Layer.DEF_ATTRS.keys()) and (self.__wasattrmap__[name] is None):
@@ -171,7 +171,7 @@ class Layer(Resource):
 		raise NotImplementedError, "Provider an implementation for %s.getSupportedQOP()." % self.__wastype__
 	
 	def __getconfigid__(self, id = None):
-		return self.__wasid__
+		return self.__wasid
 
 	def __create__(self, update):
 		raise NotImplementedError, "%s.create* method disabled for security reasons." % self.__wastype__
@@ -222,11 +222,11 @@ class MessageQOP(Resource):
 	
 	def __init__(self, wasid, parent):
 		Resource.__init__(self)
-		self.__wasid__ = wasid
-		self.parent    = parent
+		self.__wasid = wasid
+		self.parent  = parent
 		
 	def __getconfigid__(self, id = None):
-		return self.__wasid__
+		return self.__wasid
 	
 	def __remove__(self, deep):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
@@ -242,11 +242,11 @@ class TransportQOP(Resource):
 	
 	def __init__(self, wasid, parent):
 		Resource.__init__(self)
-		self.__wasid__ = wasid
+		self.__wasid = wasid
 		self.parent    = parent
 	
 	def __getconfigid__(self, id = None):
-		return self.__wasid__
+		return self.__wasid
 	
 	def __remove__(self, deep):
 		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__

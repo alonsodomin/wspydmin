@@ -40,30 +40,30 @@ class Library(Resource):
 		self.name   = Library.__NAMEPREFIX__ + str(name)
 		self.parent = parent
 		
-		self.__classpath__   = []
-		self.__nativepath__  = []
-		self.__libraryRefs__ = []
+		self.__classpath   = []
+		self.__nativepath  = []
+		self.__libraryRefs = []
 	
 	def __create__(self, update):
 		if self.classPath is None:
-			self.classPath = String(str(self.__classpath__)[2:-2]).replaceAll("', '", ';')
+			self.classPath = String(str(self.__classpath)[2:-2]).replaceAll("', '", ';')
 		
 		if self.nativePath is None:
-			self.nativePath = String(str(self.__nativepath__)[2:-2]).replaceAll("', '", ';')
+			self.nativePath = String(str(self.__nativepath)[2:-2]).replaceAll("', '", ';')
 		
 		Resource.__create__(self, update)
 		
-		for libRef in self.__libraryRefs__:
+		for libRef in self.__libraryRefs:
 			libRef.__create__(update)
 	
 	def addClassPathEntry(self, classPathEntry):
-		self.__classpath__.append(classPathEntry)
+		self.__classpath.append(classPathEntry)
 	
 	def addLibraryRef(self, targetResourceName):
-		self.__libraryRefs__.append(LibraryRef(self, targetResourceName))
+		self.__libraryRefs.append(LibraryRef(self, targetResourceName))
 	
 	def addNativePathEntry(self, nativePathEntry):
-		self.__nativepath__.append(nativePathEntry)
+		self.__nativepath.append(nativePathEntry)
 	
 	def remove(self):
 		for librefId in AdminConfig.list('LibraryRef').splitlines():

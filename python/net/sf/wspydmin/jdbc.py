@@ -75,7 +75,7 @@ class CMPConnectorFactory(Resource):
 			self.provider = AdminConfig.getid(self.__scope__)
 
 class JDBCProvider(Resource):
-	DEF_ID    = '%(scope)s/JDBCProvider:%(name)s/'
+	DEF_ID    = '%(scope)sJDBCProvider:%(name)s/'
 	DEF_ATTRS = {
 						   'name' : None,
                    'providerType' : None,
@@ -96,6 +96,7 @@ class DataSource(J2EEPropertySetResource):
 	
 	DEF_ID    = '%(scope)sDataSource:%(name)s'
 	DEF_ATTRS = {
+                    'name' : None,
 		   'authDataAlias' : None,
 		    	'provider' : None,
 			'providerType' : None,
@@ -109,80 +110,79 @@ class DataSource(J2EEPropertySetResource):
 			raise IllegalArgumentException, 'A provider must be given'
 		
 		J2EEPropertySetResource.__init__(self)
-		self.__auth__     = None
-		self.__iscmp__    = None
-		self.__cmpcf__    = None
+		self.__auth     = None
+		self.__iscmp    = None
+		self.__cmpcf    = None
 		
 		self.provider     = provider
 		self.providerType = provider.providerType
 	
 	def __create__(self, update):
 		#1.- Configure Auth Data       
-		if not self.__auth__ is None:                    
-			self.__auth__.__create__(update)
-			self.authDataAlias = self.__auth__.alias
-			if (self.parent.xa and (self.xaRecoveryAlias is None)):
+		if not self.__auth is None:                    
+			self.__auth.__create__(update)
+			self.authDataAlias = self.__auth.alias
+			if (self.provider.xa and (self.xaRecoveryAlias is None)):
 				# If provider is XA enabled, then configure XA recovery alias
-				self.xaRecoveryAuthAlias = self.__auth__.alias
+				self.xaRecoveryAuthAlias = self.__auth.alias
 		
 		#2.- Configure JDBC Provider
-		self.parent.__create__(update)
+		self.provider.__create__(update)
 		
 		#3.- Configure Data source
 		J2EEPropertySetResource.__create__(self, update)
 		
 		#4.- Configure CMP Factory if needed
-		if not (self.__iscmp__ is None):
-			self.__cmpcf__.authDataAlias = self.authDataAlias
-			self.__cmpcf__.cmpDatasource = self.__getconfigid__()
-			if self.__iscmp__:
-				if not self.__cmpcf__.exists():
-					self.__cmpcf__.create()
+		if not (self.__iscmp is None):
+			self.__cmpcf.authDataAlias = self.authDataAlias
+			self.__cmpcf.cmpDatasource = self.__getconfigid__()
+			if self.__iscmp:
+				if not self.__cmpcf.exists():
+					self.__cmpcf.create()
 				else:
-					self.__cmpcf__.update()
+					self.__cmpcf.update()
 			else:
-				self.__cmpcf__.remove()
+				self.__cmpcf.remove()
 
 	def __loadattrs__(self):
 		Resource.__loadattrs__(self)
 		if not self.exists(): return
 		if not self.authDataAlias is None:
-			self.__auth__ = JAASAuthData(self.authDataAlias)
+			self.__auth = JAASAuthData(self.authDataAlias)
 
 	def getAuthData(self):
-		if (self.__auth__ is None) and (not self.authDataAlias is None):
-			self.__auth__ = JAASAuthData(self.authDataAlias)
-		if (self.__auth__ is None) and (not self.exists()): 
+		if (self.__auth is None) and (not self.authDataAlias is None):
+			self.__auth = JAASAuthData(self.authDataAlias)
+		if (self.__auth is None) and (not self.exists()): 
 			return None
-		return self.__auth__
+		return self.__auth
 	
 	def setAuthData(self, user, password, desc = None):
 		alias = DataSource.AUTH_DATA_ALIAS % {
 			'userId' : user, 
 			'name'   : self.name
 		}
-		
-		self.__auth__             = JAASAuthData(alias)
-		self.__auth__.userId      = user
-		self.__auth__.password    = password
-		self.__auth__.description = desc
+		self.__auth             = JAASAuthData(alias)
+		self.__auth.userId      = user
+		self.__auth.password    = password
+		self.__auth.description = desc
 	
 	def getConnectionPool(self):
 		return ConnectionPool(self)
 	
 	def isContainerManaged(self):
-		return self.__iscmp__
+		return self.__iscmp
 	
 	def enableCMP(self):
-		if self.__iscmp__:
+		if self.__iscmp:
 			raise Exception, 'CMP already enabled on DataSource "%s"' % self.__id__
 		
-		self.__iscmp__ = 1
-		self.__cmpcf__ = CMPConnectorFactory("%s_CF" % self.name)
+		self.__iscmp = 1
+		self.__cmpcf = CMPConnectorFactory("%s_CF" % self.name)
 	
 	def disableCMP(self):
-		self.__iscmp__ = 0
-		self.__cmpcf__ = None
+		self.__iscmp = 0
+		self.__cmpcf = None
 	
 	def testConnection(self):
 		return AdminControl.testConnection(self.__getconfigid__())

@@ -32,11 +32,10 @@ class MBeanMethodInvoker:
         return str(args)
 
 class MBeanHelper(WasObjectHelper):
-    __mbeaninvoker__ = MBeanMethodInvoker
     
     def __helperinit__(self, klass):
         WasObjectHelper.__helperinit__(self, klass)
-        self.__methods__ = copy.copy(getattr(klass, 'DEF_MTHDS'))
+        self.__methods = copy.copy(getattr(klass, 'DEF_MTHDS'))
 
     def __getmbeanid__(self):
         if hasattr(self, 'name') and hasattr(self, 'nodeName') and hasattr(self, 'serverName'):
@@ -46,8 +45,8 @@ class MBeanHelper(WasObjectHelper):
             raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__wasclass__
     
     def __missedattr__(self, name):
-        if (self.__methods__.count(name) > 0):
-            return self.__mbeaninvoker__(self.__getmbeanid__(), name)
+        if (self.__methods.count(name) > 0):
+            return MBeanMethodInvoker(self.__getmbeanid__(), name)
         else:
             return WasObjectHelper.__missedattr__(self, name)
 

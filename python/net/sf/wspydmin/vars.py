@@ -17,11 +17,37 @@
 
 import re
 
-from net.sf.wspydmin import AdminConfig, AdminControl
+from net.sf.wspydmin           import AdminConfig, AdminControl
+from net.sf.wspydmin.admin     import Cell
+from net.sf.wspydmin.resources import Resource
 
-class VariableSubstitutionEntry:
+class VariableMap(Resource):
+	DEF_ID = '%(scope)sVariableMap:/'
 	
-	def __init__(self):
+	def __init__(self, parent = Cell()):
+		Resource.__init__(self)
+		self.parent   = parent
+		self.__varmap = {}
+
+	def addVariable(self, var):
+		self.__varmap[var.symbolicName] = var
+
+class VariableSubstitutionEntry(Resource):
+	__parent_attrname__ = 'variableMap'
+	
+	DEF_ID    = '%(scope)sVariableSubstitutionEntry:%(symbolicName)s/'
+	DEF_ATTRS = {
+			'symbolicName' : None,
+			       'value' : None
+	}
+	
+	def __init__(self, variableMap):
+		Resource.__init__(self)
+		self.variableMap = variableMap
+		
+	
+class VariableSubstitutionEntryHelper:
+	def __init__(self):		
 		self.vms = {
 			'cells' : {},
 		 'clusters' : {},
