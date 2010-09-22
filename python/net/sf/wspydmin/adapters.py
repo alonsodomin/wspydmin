@@ -19,6 +19,6 @@ from com.ibm.websphere.management.exception import AdminException
 from com.ibm.ws.scripting                   import ScriptingException
 
 from net.sf.wspydmin                        import AdminConfig, AdminControl
-from net.sf.wspydmin                        import Cell   
+from net.sf.wspydmin.topology               import Cell   
 from net.sf.wspydmin.resources              import Resource
 
