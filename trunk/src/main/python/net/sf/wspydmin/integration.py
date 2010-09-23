@@ -21,7 +21,6 @@ from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
 from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.jdbc      import DataSource
 from net.sf.wspydmin.topology  import Cell, Node, Server, Cluster
-from net.sf.wspydmin.utils     import getServerName, getNodeName
 
 class SIResource(Resource):
 	

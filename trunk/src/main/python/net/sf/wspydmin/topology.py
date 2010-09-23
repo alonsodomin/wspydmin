@@ -289,9 +289,6 @@ class Server(ResourceMBean):
             logging.debug('about to create a new classloader PARENT_LAST on server %s' % (self.__getconfigid__()))
             AdminConfig.create('Classloader',self.getApplicationServerId(),[['mode','PARENT_LAST']])
     
-    def getApplicationServerId(self):
-        return AdminConfig.list('ApplicationServer', self.__getconfigid__()).splitlines()[0]
-    
     def getJavaVirtualMachine(self):
         return self.__jvm
     
@@ -356,6 +353,18 @@ class Node(Server):
 
     def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
         Server.__init__(self, serverId, parent)
+
+class ApplicationServer(Node):
+	
+	def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
+		Node.__init__(self, serverId, parent)
+
+	def __getconfigid__(self):
+		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+
+	def getApplicationServerId(self):
+		"""@deprecated Clients should use the 'magic' method __getconfigid__()"""
+		return self.__getconfigid__()
 
 def getBasePort(cell = Cell()):
     port = cell.getAdminhostPort()
