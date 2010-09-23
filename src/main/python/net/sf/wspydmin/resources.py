@@ -21,8 +21,7 @@ from java.lang             import IllegalStateException
 from com.ibm.ws.scripting  import ScriptingException
 
 from net.sf.wspydmin       import AdminConfig, AdminControl
-from net.sf.wspydmin.lang  import WasObject, was_getconfigid
-from net.sf.wspydmin.types import *
+from net.sf.wspydmin.lang  import *
 
 class AbstractResourceError(Exception):
 	pass
