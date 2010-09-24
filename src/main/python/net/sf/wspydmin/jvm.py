@@ -20,8 +20,8 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.properties import PropertyHolderResource
 
 class JavaVirtualMachine(PropertyHolderResource):
-	DEF_ID    = '/JavaVirtualMachine:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/JavaVirtualMachine:/'
+	DEF_CFG_ATTRS = {
 			          'bootClasspath' : None,
 			              'classpath' : None,
 			              'debugArgs' : None,
@@ -48,7 +48,7 @@ class JavaVirtualMachine(PropertyHolderResource):
 		#self.genericJvmArguments = AdminConfig.showAttribute(self.__getconfigid__(), 'genericJvmArguments').split()
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 		
 	def addGenericJvmArgument(self, genericJvmArgument):
 		newJvmArgName   = genericJvmArgument.split('=')[0]

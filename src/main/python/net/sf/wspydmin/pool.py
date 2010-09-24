@@ -19,8 +19,8 @@ from net.sf.wspydmin           import AdminConfig
 from net.sf.wspydmin.resources import Resource
 
 class ConnectionPool(Resource):
-	DEF_ID    = '%(scope)sConnectionPool:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sConnectionPool:/'
+	DEF_CFG_ATTRS = {
                             'agedTimeout' : 0,
                       'connectionTimeout' : 180,
           'freePoolDistributionTableSize' : 0,
@@ -48,4 +48,4 @@ class ConnectionPool(Resource):
 		self.index  = index
 	
 	def __getconfigid__(self):
-		return AdminConfig.getid(self.__id__).splitlines()[self.index]
+		return AdminConfig.getid(self.__was_cfg_path__).splitlines()[self.index]

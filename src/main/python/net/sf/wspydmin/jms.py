@@ -21,8 +21,8 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.pool       import ConnectionPool
 
 class JMSProvider(Resource):
-	DEF_ID    = '%(scope)sJMSProvider:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sJMSProvider:%(name)s/'
+	DEF_CFG_ATTRS = {
 				'name' : None
 	}
 	
@@ -38,9 +38,9 @@ class MQJMSProvider(JMSProvider):
 		JMSProvider.__init__(self, MQJMSProvider.JMS_PROVIDER_NAME, parent)
 
 class MQQueueConnectionFactory(Resource):
-	DEF_ID    = '%(scope)sMQQueueConnectionFactory:%(name)s/'
-	DEF_TPL   = 'Example non-XA WMQ QueueConnectionFactory'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sMQQueueConnectionFactory:%(name)s/'
+	DEF_CFG_TMPL   = 'Example non-XA WMQ QueueConnectionFactory'
+	DEF_CFG_ATTRS = {
                     'name' : None,
                 'jndiName' : None,
                     'host' : None,
@@ -66,9 +66,9 @@ class MQQueueConnectionFactory(Resource):
 		self.port = port
 
 class MQQueue(Resource):
-	DEF_ID    = '/MQQueue:%(name)s/'
-	DEF_TPL   = 'Example.JMS.WMQ.Q1'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/MQQueue:%(name)s/'
+	DEF_CFG_TMPL   = 'Example.JMS.WMQ.Q1'
+	DEF_CFG_ATTRS = {
                     'name' : None,
                 'jndiName' : None,
             'targetClient' : None,

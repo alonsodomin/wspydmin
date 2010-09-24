@@ -19,8 +19,8 @@ from net.sf.wspydmin           import AdminConfig
 from net.sf.wspydmin.resources import Resource
 
 class TunningParams(Resource):
-	DEF_ID    = '%(scope)sTuningParams:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sTuningParams:/'
+	DEF_CFG_ATTRS = {
                 "allowOverflow" : "false",
          "invalidationSchedule" : None,
           "invalidationTimeout" : 30,
@@ -37,11 +37,11 @@ class TunningParams(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__())
 
 class SessionManager(Resource):
-	DEF_ID    = '%(scope)sSessionManager:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sSessionManager:/'
+	DEF_CFG_ATTRS = {
             "accessSessionOnTimeout" : "true",
       "allowSerializedSessionAccess" : "false",
                            "context" : None,
@@ -70,7 +70,7 @@ class SessionManager(Resource):
 		self.tunningParams = self.__tunning.__getconfigid__()
 
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__())
 
 	def __getattr__(self, name):
 		if (name == 'tunningParams'):
@@ -85,8 +85,8 @@ class SessionManager(Resource):
 			Resource.__setattr__(self, name, value)
 
 class ThreadPool(Resource):
-	DEF_ID    = '/ThreadPool:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/ThreadPool:%(name)s/'
+	DEF_CFG_ATTRS = {
       "customProperties" : None,
      "inactivityTimeout" : None,
             "isGrowable" : None,
@@ -103,7 +103,7 @@ class ThreadPool(Resource):
 	
 	def __getconfigid__(self, id = None):
 		if self.__wasid is None:
-			for tp in AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines():
+			for tp in AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines():
 				if AdminConfig.showAttribute(tp, 'name') == self.name:
 					self.__wasid = tp
 					break

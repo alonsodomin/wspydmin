@@ -25,8 +25,8 @@ from net.sf.wspydmin.resources     import Resource
 from net.sf.wspydmin.classloaders  import ClassLoader
 
 class Library(Resource):
-	DEF_ID    = '/Library:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/Library:%(name)s/'
+	DEF_CFG_ATTRS = {
                'name' : None,
           'classPath' : None,
          'nativePath' : None,
@@ -79,14 +79,14 @@ class Library(Resource):
 				lambda x: x.split('(')[0].split(Library.__NAMEPREFIX__)[1], # get library name from ID 
 				filter( 
 					lambda x: x.startswith(Library.__NAMEPREFIX__), # get only custom libraries
-					AdminConfig.list(self.__wastype__).splitlines()
+					AdminConfig.list(self.__was_cfg_type__).splitlines()
 				)
 			)
 		)
 
 class LibraryRef(Resource):
-	DEF_ID    = '/LibraryRef:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/LibraryRef:/'
+	DEF_CFG_ATTRS = {
               'libraryName' : None,                          
         'sharedClassloader' : None
 	}
@@ -103,11 +103,11 @@ class LibraryRef(Resource):
 	
 	def __postinit__(self):	
 		self.__wassuper__.__postinit__()
-		if (self.__scope__ is None):   # <-- scope = parent.__id__
+		if (self.__scope__ is None):   # <-- scope = parent.__was_cfg_path__
 			raise IllegalStateException, 'Cannot create a library Ref on a (server or application) that does not exist'
 	
 	def __getconfigid__(self):
-		for librefId in AdminConfig.list(self.__wastype__).splitlines():
+		for librefId in AdminConfig.list(self.__was_cfg_type__).splitlines():
 			libName = AdminConfig.showAttribute(librefId, 'libraryName')
 			if (libName == self.libraryName and librefId.find(self.targetResourceName)!=-1 ):
 				return librefId

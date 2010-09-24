@@ -20,10 +20,10 @@ from net.sf.wspydmin.resources import Resource
 from net.sf.wspydmin.jdbc      import JDBCProvider, DataSource
 
 class OracleJDBCProvider(JDBCProvider):
-	DEF_TPL = 'Oracle JDBC Driver'
+	DEF_CFG_TMPL = 'Oracle JDBC Driver'
 
 	def __init__(self, parent = Cell()):
-		JDBCProvider.__init__(self, OracleJDBCProvider.DEF_TPL, parent)
+		JDBCProvider.__init__(self, OracleJDBCProvider.DEF_CFG_TMPL, parent)
 
 	def __loaddefaults__(self):
 		self.providerType = 'Oracle JDBC Driver'
@@ -38,10 +38,10 @@ class OracleJDBCProvider(JDBCProvider):
 		junk.remove()
 
 class OracleXaJDBCProvider(JDBCProvider):
-	DEF_TPL = 'Oracle JDBC Driver (XA)'
+	DEF_CFG_TMPL = 'Oracle JDBC Driver (XA)'
 
 	def __init__(self, parent = Cell()):
-		JDBCProvider.__init__(self, OracleXaJDBCProvider.DEF_TPL, parent)
+		JDBCProvider.__init__(self, OracleXaJDBCProvider.DEF_CFG_TMPL, parent)
 
 	def __loaddefaults__(self):
 		self.providerType = 'Oracle JDBC Driver (XA)'
@@ -92,7 +92,7 @@ class SybaseJDBCProvider(JDBCProvider):
 		self.xa = 'false'
 
 class OracleDataSource(DataSource):
-	DEF_TPL   = 'Oracle JDBC Driver DataSource'
+	DEF_CFG_TMPL   = 'Oracle JDBC Driver DataSource'
 	DEF_PROPS = {
 		                        'driverType' : 'thin',
 		                       'description' : None,
@@ -128,7 +128,7 @@ class OracleDataSource(DataSource):
 		self.dataSourceHelperClassName = 'com.ibm.websphere.rsadapter.OracleDataStoreHelper'		
 
 class OracleXaDataSource(OracleDataSource):
-	DEF_TPL   = 'Oracle JDBC Driver XA DataSource'
+	DEF_CFG_TMPL   = 'Oracle JDBC Driver XA DataSource'
 	
 	def __init__(self, name):
 		OracleDataSource.__init__(self, name, OracleXaJDBCProvider())

@@ -21,8 +21,8 @@ from net.sf.wspydmin               import AdminConfig, AdminControl
 from net.sf.wspydmin.resources     import Resource	
 
 class ClassLoader(Resource):
-	DEF_ID    = '/Classloader:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/Classloader:/'
+	DEF_CFG_ATTRS = {
         'mode' : None #PARENT_FIRST, PARENT_LAST
 	}
 
@@ -37,7 +37,7 @@ class ClassLoader(Resource):
 		
 		for targetName, id in map(
 			lambda x: [x.split('|')[0].split('/')[-1], x],
-			AdminConfig.list(self.__wastype__).splitlines()
+			AdminConfig.list(self.__was_cfg_type__).splitlines()
 		):
 			if targetName == self.targetResourceName:
 				self.__wasid = id

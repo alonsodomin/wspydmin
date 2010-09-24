@@ -23,8 +23,8 @@ from net.sf.wspydmin.topology     import ApplicationServer
 from net.sf.wspydmin.classloaders import ClassLoader
 
 class Deployment(Resource):
-	DEF_ID    = '%(scope)sDeployment:%(appname)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sDeployment:%(appname)s/'
+	DEF_CFG_ATTRS = {
 		'appname' : None
 	}
 	
@@ -52,7 +52,7 @@ class Deployment(Resource):
 		return self.__deployedObject
 
 class DeployedObject(Resource):
-	DEF_ATTRS = {
+	DEF_CFG_ATTRS = {
 		'wasClassLoaderPolicy' : 'SINGLE'
 	}
 	

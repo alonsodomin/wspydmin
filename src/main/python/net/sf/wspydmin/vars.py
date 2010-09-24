@@ -22,7 +22,7 @@ from net.sf.wspydmin.admin     import Cell
 from net.sf.wspydmin.resources import Resource
 
 class VariableMap(Resource):
-	DEF_ID = '%(scope)sVariableMap:/'
+	DEF_CFG_PATH = '%(scope)sVariableMap:/'
 	
 	def __init__(self, parent = Cell()):
 		Resource.__init__(self)
@@ -35,8 +35,8 @@ class VariableMap(Resource):
 class VariableSubstitutionEntry(Resource):
 	__parent_attrname__ = 'variableMap'
 	
-	DEF_ID    = '%(scope)sVariableSubstitutionEntry:%(symbolicName)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sVariableSubstitutionEntry:%(symbolicName)s/'
+	DEF_CFG_ATTRS = {
 			'symbolicName' : None,
 			       'value' : None
 	}

@@ -21,8 +21,8 @@ from net.sf.wspydmin.topology   import Cell
 from net.sf.wspydmin.properties import PropertyHolderResource
 
 class PMIService(PropertyHolderResource):
-	DEF_ID    = '%(scope)sNode:%(node)s/Server:%(server)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sNode:%(node)s/Server:%(server)s/'
+	DEF_CFG_ATTRS = {
 		           'enable' : None,
 		 'initialSpecLevel' : None,
 		     'statisticSet' : None,
@@ -36,5 +36,5 @@ class PMIService(PropertyHolderResource):
 		self.parent = parent
 	
 	def __getconfigid__(self):
-		return AdminConfig.list(self.__wastype__, self.__id__).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.__was_cfg_path__).splitlines()[0]
 

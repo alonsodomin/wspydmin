@@ -24,8 +24,8 @@ from net.sf.wspydmin.tunning   import ThreadPool
 from net.sf.wspydmin.utils     import *
 
 class MessageListenerService(Resource):
-	DEF_ID    = '/MessageListenerService:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/MessageListenerService:/'
+	DEF_CFG_ATTRS = {
                             'enable' : 'false',
                            'context' : None,
                      #'listenerPorts' : [],
@@ -50,7 +50,7 @@ class MessageListenerService(Resource):
 				self.__wasattrmap__[name] = self.__parseattr__(name, value)
 	
 	def __getconfigid__(self):
-		id = AdminConfig.list(self.__wastype__, self.parent.__getconfigid__())
+		id = AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__())
 		if (id is None) or (id == ''):
 			return None
 		else:
@@ -84,8 +84,8 @@ class MessageListenerService(Resource):
 			lp.remove()
 
 class ListenerPort(ResourceMBean):
-	DEF_ID      = '/ListenerPort:%(name)s/'
-	DEF_ATTRS   = {
+	DEF_CFG_PATH      = '/ListenerPort:%(name)s/'
+	DEF_CFG_ATTRS   = {
                              'name' : None,
                       'description' : None,
         'connectionFactoryJNDIName' : None,
@@ -115,7 +115,7 @@ class ListenerPort(ResourceMBean):
 			self.__statemng.update()
 	
 	def __getconfigid__(self, id = None):
-		for lpid in AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines():
+		for lpid in AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines():
 			if lpid.startswith(self.name):
 				return lpid
 		return None
@@ -124,8 +124,8 @@ class ListenerPort(ResourceMBean):
 		return (AdminControl.getAttribute(self.__getmbeanid__(), 'started') == 'true')
 	
 class StateManageable(Resource):
-	DEF_ID    = '%(scope)sStateManageable:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sStateManageable:/'
+	DEF_CFG_ATTRS = {
         'initialState' : 'START'      
 	}
 	
@@ -135,7 +135,7 @@ class StateManageable(Resource):
 		self.initialState = initialState
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def removeAll(self):
 		raise UnsupportedOperationException, "Use ListenerPort.removeAll() instead of StateManageable.removeAll()"

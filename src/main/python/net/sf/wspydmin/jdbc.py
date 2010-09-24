@@ -31,8 +31,8 @@ from net.sf.wspydmin.security                      import JAASAuthData
 from net.sf.wspydmin.properties                    import J2EEPropertyHolderResource
 
 class J2CResourceAdapter(Resource):
-    DEF_ID    = '%(scope)sJ2CResourceAdapter:%(name)s/'
-    DEF_ATTRS = {
+    DEF_CFG_PATH    = '%(scope)sJ2CResourceAdapter:%(name)s/'
+    DEF_CFG_ATTRS = {
         'name' : None
     }
     
@@ -49,8 +49,8 @@ class J2CRelationalResourceAdapter(J2CResourceAdapter):
 		J2CResourceAdapter.__init__(self, J2CRelationalResourceAdapter.RESOURCE_ADAPTER_NAME)
 
 class CMPConnectorFactory(Resource):
-	DEF_ID    = '%(scope)sCMPConnectorFactory:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sCMPConnectorFactory:%(name)s/'
+	DEF_CFG_ATTRS = {
                                'name' : None,
                       'authDataAlias' : None,
             'authMechanismPreference' : 'BASIC_PASSWORD',
@@ -75,8 +75,8 @@ class CMPConnectorFactory(Resource):
 			self.provider = AdminConfig.getid(self.__scope__)
 
 class JDBCProvider(Resource):
-	DEF_ID    = '%(scope)sJDBCProvider:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sJDBCProvider:%(name)s/'
+	DEF_CFG_ATTRS = {
 						   'name' : None,
                    'providerType' : None,
         'implementationClassName' : None,
@@ -94,8 +94,8 @@ class JDBCProvider(Resource):
 class DataSource(J2EEPropertyHolderResource):
 	__parent_attrname__ = 'provider'
 	
-	DEF_ID    = '%(scope)sDataSource:%(name)s'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sDataSource:%(name)s'
+	DEF_CFG_ATTRS = {
                     'name' : None,
 		   'authDataAlias' : None,
 		    	'provider' : None,
@@ -178,7 +178,7 @@ class DataSource(J2EEPropertyHolderResource):
 	
 	def enableCMP(self):
 		if self.__iscmp:
-			raise Exception, 'CMP already enabled on DataSource "%s"' % self.__id__
+			raise Exception, 'CMP already enabled on DataSource "%s"' % self.__was_cfg_path__
 		
 		self.__iscmp = 1
 		self.__cmpcf = CMPConnectorFactory("%s_CF" % self.name)

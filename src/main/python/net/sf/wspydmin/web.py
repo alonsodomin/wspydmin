@@ -20,8 +20,8 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.tunning    import SessionManager
 
 class WebContainer(Resource):
-	DEF_ID    = '/WebContainer:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/WebContainer:/'
+	DEF_CFG_ATTRS = {
                 'disablePooling' : 'false',
           'enableServletCaching' : 'false',
         'sessionAffinityTimeout' : 0
@@ -33,7 +33,7 @@ class WebContainer(Resource):
 		self.__sessionmngr = SessionManager(self)
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def getSessionManager(self):
 		return self.__sessionmngr

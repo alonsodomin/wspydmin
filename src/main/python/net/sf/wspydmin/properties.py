@@ -18,7 +18,7 @@
 import sys, copy
 
 from net.sf.wspydmin           import AdminConfig, AdminControl
-from net.sf.wspydmin.lang      import was_type
+from net.sf.wspydmin.lang      import was_resource_type
 from net.sf.wspydmin.resources import Resource
 
 class J2EEPropertyHolderResource(Resource):
@@ -135,8 +135,8 @@ class PropertyHolderResource(Resource):
 		self.__properties[name].value = value
 
 class Property(Resource):
-	DEF_ID    = '%(scope)sProperty:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sProperty:%(name)s/'
+	DEF_CFG_ATTRS = {
                         'name' : None,
                        'value' : None,
                  'description' : None,
@@ -150,14 +150,14 @@ class Property(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self):
-		for pid in AdminConfig.list(Property.__wastype__, self.parent.__getconfigid__()).splitlines():
+		for pid in AdminConfig.list(Property.__was_cfg_type__, self.parent.__getconfigid__()).splitlines():
 			if pid.startswith(self.name):
 				return pid
 		return None
 
 class J2EEResourceProperty(Resource):
-	DEF_ID    = '%(scope)sJ2EEResourceProperty:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sJ2EEResourceProperty:/'
+	DEF_CFG_ATTRS = {
              'name' : None,
              'type' : None,
             'value' : None,
@@ -170,19 +170,19 @@ class J2EEResourceProperty(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self):
-		for p in AdminConfig.getid(self.__id__).splitlines():
+		for p in AdminConfig.getid(self.__was_cfg_path__).splitlines():
 			if self.name == p.split('(')[0]:
 				return p
 		return None
 
 	def __setattr__(self, name, value):
 		if name == 'type':
-			value = was_type(value)
+			value = was_resource_type(value)
 		Resource.__setattr__(self, name, value)
 
 class J2EEResourcePropertySet(Resource):
-	DEF_ID    = '%(scope)sJ2EEResourcePropertySet:/'
-	DEF_ATTRS = {}
+	DEF_CFG_PATH    = '%(scope)sJ2EEResourcePropertySet:/'
+	DEF_CFG_ATTRS = {}
 
 	def __init__(self, parent):
 		Resource.__init__(self)
