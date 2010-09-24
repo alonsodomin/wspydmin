@@ -25,7 +25,7 @@ from net.sf.wspydmin.topology  import Cell, Node, Server, Cluster
 class SIResource(Resource):
 	
 	def __getconfigid__(self):
-		raise NotImplementedError, "ERROR: %s.__getconfigid__() not implemented" % self.__wastype__
+		raise NotImplementedError, "ERROR: %s.__getconfigid__() not implemented" % self.__was_cfg_type__
 	
 	def __collectattrs__(self):
 		str = ''
@@ -35,8 +35,8 @@ class SIResource(Resource):
 		return str
 
 class SIBus(SIResource):
-	DEF_ID    = '/SIBus:%(bus)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBus:%(bus)s/'
+	DEF_CFG_ATTRS = {
                         'bus' : None,                      
                 'busSecurity' : None, 
                 'description' : None,
@@ -111,8 +111,8 @@ class SIBus(SIResource):
 			SIBus(sibName).remove()
 
 class SIBusMember(SIResource):
-	DEF_ID    = '/SIBusMember:%(bus)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBusMember:%(bus)s/'
+	DEF_CFG_ATTRS = {
                                  'bus' : None,
                              'channel' : None,
                    'securityAuthAlias' : None,
@@ -166,8 +166,8 @@ class SIBusMember(SIResource):
 		logging.warning("SIBusMember.removeAll() not implemented. User SIBus.removeAll() instead.")
 
 class SIBJMSConnectionFactory(SIResource):
-	DEF_ID    = '/SIBJMSConnectionFactory:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBJMSConnectionFactory:%(name)s/'
+	DEF_CFG_ATTRS = {
                                   'name' : None,
                               'jndiName' : None,
                                'busName' : None,
@@ -232,8 +232,8 @@ class SIBJMSTopicConnectionFactory(SIBJMSConnectionFactory):
 		SIBJMSConnectionFactory.__init__(self, name, jndiName, busName, parent, SIBJMSConnectionFactory.TOPIC_CONNECTION_FACTORY)
 
 class SIBJMSTopic(SIResource):
-	DEF_ID    = '/SIBJMSTopic:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBJMSTopic:%(name)s/'
+	DEF_CFG_ATTRS = {
                 "name" : None,
             "jndiName" : None,
          "description" : None,
@@ -266,8 +266,8 @@ class SIBJMSTopic(SIResource):
 			AdminTask.deleteSIBJMSTopic(id)
 
 class SIBDestination(SIResource):
-	DEF_ID    = '/SIBDestination:%(name)s/',
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBDestination:%(name)s/',
+	DEF_CFG_ATTRS = {
                 "bus" : None,
                "name" : None,
                "type" : None,
@@ -289,8 +289,8 @@ class SIBDestination(SIResource):
 		raise NotImplementedError("WARN: SIBDestination.removeAll() not implemented. SIBBus.removeAll() does the job...")
 
 class SIBJMSQueue(SIResource):
-	DEF_ID    = '/SIBJMSQueue:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/SIBJMSQueue:%(name)s/'
+	DEF_CFG_ATTRS = {
                 "name" : None,
             "jndiName" : None,
 			 "cluster" : None,
@@ -344,8 +344,8 @@ class SIBJMSQueue(SIResource):
 			AdminTask.deleteSIBJMSQueue(id)
 
 class SIBJMSActivationSpec(SIResource):
-	DEF_ID    = '/J2CActivationSpec:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/J2CActivationSpec:%(name)s/'
+	DEF_CFG_ATTRS = {
                            'name' : None,
                        'jndiName' : None,
             'destinationJndiName' : None,

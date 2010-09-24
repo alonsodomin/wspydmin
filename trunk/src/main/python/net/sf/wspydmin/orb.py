@@ -20,8 +20,8 @@ from net.sf.wspydmin.resources  import Resource
 from net.sf.wspydmin.tunning    import ThreadPool
 
 class ObjectRequestBroker(Resource):
-	DEF_ID    = '/ObjectRequestBroker:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/ObjectRequestBroker:/'
+	DEF_CFG_ATTRS = {
               'commTraceEnabled' : 'false',
         'connectionCacheMaximum' : 240,
         'connectionCacheMinimum' : 100,
@@ -40,7 +40,7 @@ class ObjectRequestBroker(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self):
-		return AdminConfig.getid(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.getid(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 	
 	def getThreadPool(self):
 		return ThreadPool('ORB.thread.pool', self)

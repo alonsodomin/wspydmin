@@ -20,8 +20,8 @@ from net.sf.wspydmin.topology   import Cell
 from net.sf.wspydmin.resources  import Resource
 
 class MailProvider(Resource):
-	DEF_ID = '%(scope)sMailProvider:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH = '%(scope)sMailProvider:%(name)s/'
+	DEF_CFG_ATTRS = {
                     'name' : None,
 	}
 	
@@ -37,8 +37,8 @@ class DefaultMailProvider(MailProvider):
 		MailProvider.__init__(self, DefaultMailProvider.MAIL_PROVIDER_NAME, parent)
 
 class MailSession(Resource):
-	DEF_ID    = '%(scope)sMailSession:%(name)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sMailSession:%(name)s/'
+	DEF_CFG_ATTRS = {
                     'name' : None,
                 'jndiName' : None,
                 'mailFrom' : None,

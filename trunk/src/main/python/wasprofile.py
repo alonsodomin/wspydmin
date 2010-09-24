@@ -44,5 +44,8 @@ if not scriptHome is None:
 sys.modules['AdminApp']     = AdminApp
 sys.modules['AdminConfig']  = AdminConfig
 sys.modules['AdminControl'] = AdminControl
-sys.modules['AdminTask']    = AdminTask
+try:
+	sys.modules['AdminTask']    = AdminTask
+except :
+	sys.modules['AdminTask']    = None
 sys.modules['Help']         = Help

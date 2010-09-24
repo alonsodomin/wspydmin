@@ -15,9 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import copy
+import copy, re
 
-from net.sf.wspydmin.lang      import WasObjectHelper, WasObjectClass, WasObject
+from java.lang                 import Class as JavaClass
+
+from net.sf.wspydmin           import Help
+from net.sf.wspydmin.lang      import *
 from net.sf.wspydmin.resources import Resource
 
 class MBeanMethodInvoker:
@@ -39,10 +42,28 @@ class MBeanHelper(WasObjectHelper):
 
     def __getmbeanid__(self):
         if hasattr(self, 'name') and hasattr(self, 'nodeName') and hasattr(self, 'serverName'):
-            query = 'type=%s,name=%s,node=%s,process=%s,*' % (self.__wastype__, self.name, self.nodeName, self.serverName)
+            query = 'type=%s,name=%s,node=%s,process=%s,*' % (self.__was_cfg_type__, self.name, self.nodeName, self.serverName)
             return AdminControl.queryNames(query).splitlines()[0]
         else:
             raise NotImplementedError, "Please, provide an implementation of '%s.__getmbeanid__()' to consolidate the MBean binding." % self.__wasclass__
+
+	def __define_instance__(self):
+		# Stablish the MBean 'real' class
+		self.__mbeanclass__ = JavaClass.forName(Help.classname(self.__getmbeanid__()))
+		
+		# Obtain MBean's attribute definitions
+		attrData = {}
+		attr_pattern = re.compile(r'^([\w|\d]+)(?:\s+)([\w|\d|\.]+)(?:\s+)([RO|RW])$', re.MULTILINE)
+		helpData = Help.attributes(self.__getmbeanid__())
+		attrDesc = attr_pattern.findall(helpData)
+		for name, datatype, access in attrDesc:
+			attrDef = {
+				'name'   : name,
+				'type'   : datatype,
+				'access' : access
+			}
+			attrData[name] = attrDef
+		setattr(self, '__attrdef__', attrData)
     
     def __missedattr__(self, name):
         if (self.__methods.count(name) > 0):
@@ -55,6 +76,7 @@ class MBeanClass(WasObjectClass):
     
     def __init__(self, name, bases = (), dict = {}):
         WasObjectClass.__init__(self, name, bases, dict)
+
 
 MBean         = MBeanClass('MBean',         (WasObject,))
 ResourceMBean = MBeanClass('ResourceMBean', (Resource,))

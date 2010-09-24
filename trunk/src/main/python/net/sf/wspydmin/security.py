@@ -22,8 +22,8 @@ from net.sf.wspydmin.topology  import Cell
 from net.sf.wspydmin.resources import Resource
 
 class JAASAuthData(Resource):
-	DEF_ID    = '/JAASAuthData:%(alias)s/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/JAASAuthData:%(alias)s/'
+	DEF_CFG_ATTRS = {
               'alias' : None,
              'userId' : None,
            'password' : None,
@@ -36,14 +36,14 @@ class JAASAuthData(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		for res in AdminConfig.list(self.__wastype__).splitlines():
+		for res in AdminConfig.list(self.__was_cfg_type__).splitlines():
 			if (not res is None) and (res != '') and (self.alias == AdminConfig.showAttribute(res, 'alias')):
 				return res
 		return None
 
 class Security(Resource):
-	DEF_ID    = '%(scope)sSecurity:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '%(scope)sSecurity:/'
+	DEF_CFG_ATTRS = {
               'CSI' : None,
 			  'IBM' : None
               #TODO: there is a bunch of other attributes.
@@ -62,8 +62,8 @@ class Security(Resource):
 		return IIOPSecurityProtocol(id, self)
 
 class IIOPSecurityProtocol(Resource):
-	DEF_ID    = '/IIOPSecurityProtocol:/'
-	DEF_ATTRS = { }
+	DEF_CFG_PATH    = '/IIOPSecurityProtocol:/'
+	DEF_CFG_ATTRS = { }
 	
 	def __init__(self, wasid, parent = Security()):
 		Resource.__init__(self)
@@ -92,7 +92,7 @@ class IIOPSecurityProtocol(Resource):
 			self.performs = CommonSecureInterop(id, self)
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__was_cfg_type__
 
 	def disableAuthentication(self):
 		self.inbound.disableAuthentication()
@@ -103,8 +103,8 @@ class IIOPSecurityProtocol(Resource):
 		self.outbound.enableTCPIPTransport()
 
 class CommonSecureInterop(Resource):
-	DEF_ID    = '/CommonSecureInterop:/'
-	DEF_ATTRS = { }
+	DEF_CFG_PATH    = '/CommonSecureInterop:/'
+	DEF_CFG_ATTRS = { }
 	
 	def __init__(self, wasid, parent):
 		Resource.__init__(self)
@@ -121,7 +121,7 @@ class CommonSecureInterop(Resource):
 		return self.__wasid
 	
 	def __remove__(self, deep):
-		NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+		NotImplementedError, "%s.remove* method disabled for security reasons." % self.__was_cfg_type__
 	
 	def getMessageLayer(self):
 		id = filter(
@@ -150,8 +150,8 @@ class CommonSecureInterop(Resource):
 		self.transportLayer.enableTCPIPTransport()
 
 class Layer(Resource):
-	DEF_ID    = '/Layer:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/Layer:/'
+	DEF_CFG_ATTRS = {
 		'supportedQOP' : None,
 		 'requiredQOP' : None
 	}
@@ -162,7 +162,7 @@ class Layer(Resource):
 		self.parent  = parent
 		
 	def __getattr__(self, name):
-		if (name in Layer.DEF_ATTRS.keys()) and (self.__wasattrmap__[name] is None):
+		if (name in Layer.DEF_CFG_ATTRS.keys()) and (self.__wasattrmap__[name] is None):
 			obj = self.__getattrobj__(name)
 			self.__wasattrmap__[name] = obj
 			return obj
@@ -170,16 +170,16 @@ class Layer(Resource):
 			return Resource.__getattr__(self, name)
 	
 	def __getattrobj__(self, name):
-		raise NotImplementedError, "Provider an implementation for %s.getSupportedQOP()." % self.__wastype__
+		raise NotImplementedError, "Provider an implementation for %s.getSupportedQOP()." % self.__was_cfg_type__
 	
 	def __getconfigid__(self, id = None):
 		return self.__wasid
 
 	def __create__(self, update):
-		raise NotImplementedError, "%s.create* method disabled for security reasons." % self.__wastype__
+		raise NotImplementedError, "%s.create* method disabled for security reasons." % self.__was_cfg_type__
 		
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__was_cfg_type__
 
 class MessageLayer(Layer):
 
@@ -215,8 +215,8 @@ class TransportLayer(Layer):
 		self.supportedQOP.enableProtection = 'false'
 
 class MessageQOP(Resource):
-	DEF_ID    = '/MessageQOP:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/MessageQOP:/'
+	DEF_CFG_ATTRS = {
        'enableOutOfSequenceDetection' : None,
               'enableReplayDetection' : None,
              'establishTrustInClient' : None
@@ -231,11 +231,11 @@ class MessageQOP(Resource):
 		return self.__wasid
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__was_cfg_type__
 
 class TransportQOP(Resource):
-	DEF_ID    = '/TransportQOP:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/TransportQOP:/'
+	DEF_CFG_ATTRS = {
                           'integrity' : None,
                     'confidentiality' : None,
                    'enableProtection' : None,
@@ -251,7 +251,7 @@ class TransportQOP(Resource):
 		return self.__wasid
 	
 	def __remove__(self, deep):
-		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__wastype__
+		raise NotImplementedError, "%s.remove* method disabled for security reasons." % self.__was_cfg_type__
 
 #
 # Security utilities

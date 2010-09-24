@@ -19,8 +19,8 @@ from net.sf.wspydmin            import AdminConfig, AdminControl
 from net.sf.wspydmin.resources  import Resource
 
 class TransactionService(Resource):
-	DEF_ID    = '/TransactionService:/'
-	DEF_ATTRS = {
+	DEF_CFG_PATH    = '/TransactionService:/'
+	DEF_CFG_ATTRS = {
                 'LPSHeuristicCompletion' : 'ROLLBACK',
                   'asyncResponseTimeout' : 30,
                'clientInactivityTimeout' : 60,
@@ -43,5 +43,5 @@ class TransactionService(Resource):
 		self.parent = parent
 	
 	def __getconfigid__(self, id = None):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 

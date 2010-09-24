@@ -98,8 +98,8 @@ def changePorts(servers, endPointPorts):
             modifyServerPort(getServerName(srvId), getNodeName(srvId), endPointName, newPort)
 
 class Cell(Resource):
-    DEF_ID    = '/Cell:%(name)s/'
-    DEF_ATTRS = {
+    DEF_CFG_PATH    = '/Cell:%(name)s/'
+    DEF_CFG_ATTRS = {
         'name' : None
     }
     
@@ -114,15 +114,15 @@ class Cell(Resource):
         raise NotImplementedError, "Can't remove a cell by this call"
 
     def __getconfigid__(self):
-        return AdminConfig.getid(self.__id__)
+        return AdminConfig.getid(self.__was_cfg_path__)
 
     def __getserverids__(self):
-        return AdminConfig.list('Server', self.__id__).splitlines()
+        return AdminConfig.list('Server', self.__was_cfg_path__).splitlines()
 
     def __loadattrs__(self, skip_attrs = []):
         Resource.__loadattrs__(self, skip_attrs)
         if not self.exists(): return
-        for serverId in AdminConfig.list('Server', self.__id__).splitlines():
+        for serverId in AdminConfig.list('Server', self.__was_cfg_path__).splitlines():
             server = None
             if isNodeAgentServer(serverId):
                 server = NodeAgent(serverId, self)
@@ -189,14 +189,14 @@ class Cell(Resource):
         return VirtualHost(virtualHostName)
 
     def getSharedLibraryIds(self):
-        return AdminConfig.list('Library', self.__id__).splitlines()
+        return AdminConfig.list('Library', self.__was_cfg_path__).splitlines()
     
     def getSharedLibraryReferenceIds(self):
-        return AdminConfig.list('LibraryRef', self.__id__).splitlines()
+        return AdminConfig.list('LibraryRef', self.__was_cfg_path__).splitlines()
 
 class VirtualHost(Resource):
-    DEF_ID    = '/VirtualHost:/'
-    DEF_ATTRS = {}
+    DEF_CFG_PATH    = '/VirtualHost:/'
+    DEF_CFG_ATTRS = {}
     
     def __init__(self, virtualHostName):
         self.virtualHostName = virtualHostName
@@ -224,7 +224,7 @@ class VirtualHost(Resource):
         self.addHostAlias('*', getBasePort()+increment)
     
     def getHostAliasIds(self):
-        return AdminConfig.list('HostAlias', self.__id__)
+        return AdminConfig.list('HostAlias', self.__was_cfg_path__)
     
     def removeHostAliases(self):
         for hostAliasId in self.getHostAliasIds():
@@ -233,8 +233,8 @@ class VirtualHost(Resource):
 class Cluster(ResourceMBean):
     __parent_attrname__ = 'cell'
     
-    DEF_ID    = '%(scope)sCluster:%(name)s/'
-    DEF_ATTRS = {
+    DEF_CFG_PATH    = '%(scope)sCluster:%(name)s/'
+    DEF_CFG_ATTRS = {
         'name' : None
     }
     
@@ -257,8 +257,8 @@ class Cluster(ResourceMBean):
 
 class Server(ResourceMBean):
     DEF_SCOPE = '%(parent)sNode:%(nodeName)s/'
-    DEF_ID    = '%(scope)sServer:%(serverName)s/'
-    DEF_ATTRS = {}
+    DEF_CFG_PATH    = '%(scope)sServer:%(serverName)s/'
+    DEF_CFG_ATTRS = {}
     
     def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
         ResourceMBean.__init__(self)
@@ -308,7 +308,7 @@ class Server(ResourceMBean):
     def getThreadPools(self):
         tps = {}
         def getTpName(x): return x.split('(')[0]
-        for name in map(getTpName, AdminConfig.list('ThreadPool', AdminConfig.getid(self.__id__))):
+        for name in map(getTpName, AdminConfig.list('ThreadPool', AdminConfig.getid(self.__was_cfg_path__))):
             tps[name] = self.getThreadPool(name)
             
         return tps
@@ -360,7 +360,7 @@ class ApplicationServer(Node):
 		Node.__init__(self, serverId, parent)
 
 	def __getconfigid__(self):
-		return AdminConfig.list(self.__wastype__, self.parent.__getconfigid__()).splitlines()[0]
+		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 
 	def getApplicationServerId(self):
 		"""@deprecated Clients should use the 'magic' method __getconfigid__()"""
