@@ -15,13 +15,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from java.lang                 import UnsupportedOperationException
+from java.lang                           import UnsupportedOperationException
 
-from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.mbean     import ResourceMBean
-from net.sf.wspydmin.resources import Resource
-from net.sf.wspydmin.tunning   import ThreadPool
-from net.sf.wspydmin.utils     import *
+from net.sf.wspydmin                     import AdminConfig, AdminControl, AdminTask
+from net.sf.wspydmin.lang                import ResourceMBean, Resource
+from net.sf.wspydmin.utils               import *
+from net.sf.wspydmin.resources.tunning   import ThreadPool
+
 
 class MessageListenerService(Resource):
 	DEF_CFG_PATH    = '/MessageListenerService:/'
@@ -47,7 +47,7 @@ class MessageListenerService(Resource):
 		def excludes(x): return not {'threadPool' : None, 'listenerPorts':None}.has_key(x[0])
 		if self.exists():
 			for name, value in filter(excludes, map(splitAttrs, AdminConfig.show(self.__getconfigid__()).splitlines())):
-				self.__wasattrmap__[name] = self.__parseattr__(name, value)
+				self.__was_cfg_attrmap__[name] = self.__parseattr__(name, value)
 	
 	def __getconfigid__(self):
 		id = AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__())

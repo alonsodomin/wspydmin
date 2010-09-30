@@ -17,9 +17,9 @@
 
 import re
 
-from net.sf.wspydmin           import AdminConfig, AdminControl
-from net.sf.wspydmin.admin     import Cell
-from net.sf.wspydmin.resources import Resource
+from net.sf.wspydmin                    import AdminConfig, AdminControl
+from net.sf.wspydmin.lang               import Resource
+from net.sf.wspydmin.resources.topology import Cell
 
 class VariableMap(Resource):
 	DEF_CFG_PATH = '%(scope)sVariableMap:/'

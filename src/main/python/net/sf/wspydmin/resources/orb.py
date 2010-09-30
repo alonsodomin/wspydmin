@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin            import AdminConfig, AdminControl
-from net.sf.wspydmin.resources  import Resource
-from net.sf.wspydmin.tunning    import ThreadPool
+from net.sf.wspydmin                      import AdminConfig, AdminControl
+from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources.tunning    import ThreadPool
 
 class ObjectRequestBroker(Resource):
 	DEF_CFG_PATH    = '/ObjectRequestBroker:/'

@@ -15,12 +15,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from java.lang                    import IllegalArgumentException
+from java.lang                              import IllegalArgumentException
 
-from net.sf.wspydmin              import AdminConfig
-from net.sf.wspydmin.resources    import Resource
-from net.sf.wspydmin.topology     import ApplicationServer
-from net.sf.wspydmin.classloaders import ClassLoader
+from net.sf.wspydmin                        import AdminConfig
+from net.sf.wspydmin.lang                   import Resource
+from net.sf.wspydmin.resources.topology     import ApplicationServer
+from net.sf.wspydmin.resources.classloaders import ClassLoader
 
 class Deployment(Resource):
 	DEF_CFG_PATH    = '%(scope)sDeployment:%(appname)s/'

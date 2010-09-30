@@ -24,11 +24,11 @@ from com.ibm.websphere.management.exception        import AdminException
 from com.ibm.ws.scripting                          import ScriptingException
 
 from net.sf.wspydmin                               import AdminConfig, AdminControl
-from net.sf.wspydmin.topology                      import Cell
-from net.sf.wspydmin.pool                          import ConnectionPool
-from net.sf.wspydmin.resources                     import Resource
-from net.sf.wspydmin.security                      import JAASAuthData
-from net.sf.wspydmin.properties                    import J2EEPropertyHolderResource
+from net.sf.wspydmin.lang                          import Resource
+from net.sf.wspydmin.resources.topology            import Cell
+from net.sf.wspydmin.resources.pool                import ConnectionPool
+from net.sf.wspydmin.resources.security            import JAASAuthData
+from net.sf.wspydmin.resources.properties          import J2EEPropertyHolderResource
 
 class J2CResourceAdapter(Resource):
     DEF_CFG_PATH    = '%(scope)sJ2CResourceAdapter:%(name)s/'
@@ -69,10 +69,10 @@ class CMPConnectorFactory(Resource):
 		self.name   = name
 		self.parent = J2CRelationalResourceAdapter()
 
-	def __postinit__(self):
-		Resource.__postinit__(self)
+	def __wasinit__(self):
+		Resource.__wasinit__(self)
 		if self.provider is None:
-			self.provider = AdminConfig.getid(self.__scope__)
+			self.provider = AdminConfig.getid(self.__was_cfg_parent__)
 
 class JDBCProvider(Resource):
 	DEF_CFG_PATH    = '%(scope)sJDBCProvider:%(name)s/'
