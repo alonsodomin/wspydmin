@@ -17,10 +17,10 @@
 
 import logging
 
-from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.resources import Resource
-from net.sf.wspydmin.jdbc      import DataSource
-from net.sf.wspydmin.topology  import Cell, Node, Server, Cluster
+from net.sf.wspydmin                     import AdminConfig, AdminControl, AdminTask
+from net.sf.wspydmin.lang                import Resource
+from net.sf.wspydmin.resources.jdbc      import DataSource
+from net.sf.wspydmin.resources.topology  import Cell, Node, Server, Cluster
 
 class SIResource(Resource):
 	
@@ -29,7 +29,7 @@ class SIResource(Resource):
 	
 	def __collectattrs__(self):
 		str = ''
-		for label, value in self.__wasattrmap.items():
+		for label, value in self.__was_cfg_attrmap.items():
 			if not value is None:
 				str = '%s -%s %s' % (str, label, value)
 		return str
@@ -211,15 +211,15 @@ class SIBJMSConnectionFactory(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		logging.info("Configuring SIBJMSConnectionFactory under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params))
+		logging.info("Configuring SIBJMSConnectionFactory under %s scope with attributes '%s'" % (self.__was_cfg_parent__.split('#')[1].split('_')[0], params))
 		if update:
-			AdminTask.modifySIBJMSConnectionFactory(self.__scope__, params)
+			AdminTask.modifySIBJMSConnectionFactory(self.__was_cfg_parent__, params)
 		else:
-			AdminTask.createSIBJMSConnectionFactory(self.__scope__, params)
+			AdminTask.createSIBJMSConnectionFactory(self.__was_cfg_parent__, params)
 		
 	def removeAll(self):
 		args  = '[ -type %s]' % self.type
-		for id in AdminTask.listSIBJMSConnectionFactories(self.__scope__, args).splitlines():
+		for id in AdminTask.listSIBJMSConnectionFactories(self.__was_cfg_parent__, args).splitlines():
 			logging.info("Deleting SIBJMSConnectionFactory %s" % id.split('(')[0]))
 			AdminTask.deleteSIBJMSConnectionFactory(id)
 
@@ -254,14 +254,14 @@ class SIBJMSTopic(SIResource):
 		
 	def __create__(self, update):
 		params = self.__collectattrs__()
-		logging.info("Configuring SIBJMSTopic under %s scope with attributes '%s'" % (self.__scope__.split('#')[1].split('_')[0], params))
+		logging.info("Configuring SIBJMSTopic under %s scope with attributes '%s'" % (self.__was_cfg_parent__.split('#')[1].split('_')[0], params))
 		if update:
-			AdminTask.modifySIBJMSTopic(self.__scope__, params)
+			AdminTask.modifySIBJMSTopic(self.__was_cfg_parent__, params)
 		else:
-			AdminTask.createSIBJMSTopic(self.__scope__, params)
+			AdminTask.createSIBJMSTopic(self.__was_cfg_parent__, params)
 	
 	def removeAll(self):
-		for id in AdminTask.listSIBJMSTopics(self.__scope__).splitlines():
+		for id in AdminTask.listSIBJMSTopics(self.__was_cfg_parent__).splitlines():
 			logging.info("Deleting SIBJMSTopic %s" % id.split('(')[0])
 			AdminTask.deleteSIBJMSTopic(id)
 
@@ -322,9 +322,9 @@ class SIBJMSQueue(SIResource):
 		params = self.__collectattrs__()
 		logging.info("Configuring SIBJMSQueue under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params))
 		if update:
-			AdminTask.modifySIBJMSQueue(self.__scope__, params)
+			AdminTask.modifySIBJMSQueue(self.__was_cfg_parent__, params)
 		else:
-			AdminTask.createSIBJMSQueue(self.__scope__, params)
+			AdminTask.createSIBJMSQueue(self.__was_cfg_parent__, params)
 		
 	def assignDestinationToManagedServerOrCluster(self, serverOrCluster):
 		cell = self.parent
@@ -339,7 +339,7 @@ class SIBJMSQueue(SIResource):
 			self.node       = getNodeName(managedServerId)
 	
 	def removeAll(self):
-		for id in AdminTask.listSIBJMSQueues(self.__scope__).splitlines():
+		for id in AdminTask.listSIBJMSQueues(self.__was_cfg_parent__).splitlines():
 			logging.info("Deleting SIBJMSQueue %s" % id.split('(')[0])
 			AdminTask.deleteSIBJMSQueue(id)
 
@@ -378,9 +378,9 @@ class SIBJMSActivationSpec(SIResource):
 		params = self.__collectattrs__()
 		logging.info("Configuring J2CActivationSpec under %s scope with attributes '%s'" % (self.scope.split('#')[1].split('_')[0], params))
 		if update:
-			AdminTask.modifySIBJMSActivationSpec(self.__scope__, params)
+			AdminTask.modifySIBJMSActivationSpec(self.__was_cfg_parent__, params)
 		else:
-			AdminTask.createSIBJMSActivationSpec(self.__scope__, params)
+			AdminTask.createSIBJMSActivationSpec(self.__was_cfg_parent__, params)
 		
 	def removeAll(self):
 		for id in AdminConfig.list('J2CActivationSpec').splitlines():

@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin            import AdminConfig, AdminControl
-from net.sf.wspydmin.resources  import Resource
-from net.sf.wspydmin.properties import PropertyHolderResource
+from net.sf.wspydmin                      import AdminConfig, AdminControl
+from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources.properties import PropertyHolderResource
 
 class JavaVirtualMachine(PropertyHolderResource):
 	DEF_CFG_PATH    = '/JavaVirtualMachine:/'
@@ -43,8 +43,8 @@ class JavaVirtualMachine(PropertyHolderResource):
 		self.__wassuper__()
 		self.parent     = parent
 	
-	def __postinit__(self):
-		self.__wassuper__.__postinit__()
+	def __wasinit__(self):
+		self.__wassuper__.__wasinit__()
 		#self.genericJvmArguments = AdminConfig.showAttribute(self.__getconfigid__(), 'genericJvmArguments').split()
 	
 	def __getconfigid__(self, id = None):

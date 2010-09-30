@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin            import AdminConfig, AdminControl
-from net.sf.wspydmin.resources  import Resource
-from net.sf.wspydmin.topology   import Cell
-from net.sf.wspydmin.properties import PropertyHolderResource
+from net.sf.wspydmin                      import AdminConfig, AdminControl
+from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources.topology   import Cell
+from net.sf.wspydmin.resources.properties import PropertyHolderResource
 
 class PMIService(PropertyHolderResource):
 	DEF_CFG_PATH    = '%(scope)sNode:%(node)s/Server:%(server)s/'

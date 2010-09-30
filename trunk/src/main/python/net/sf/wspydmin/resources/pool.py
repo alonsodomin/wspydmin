@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin           import AdminConfig
-from net.sf.wspydmin.resources import Resource
+from net.sf.wspydmin      import AdminConfig
+from net.sf.wspydmin.lang import Resource
 
 class ConnectionPool(Resource):
 	DEF_CFG_PATH    = '%(scope)sConnectionPool:/'

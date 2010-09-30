@@ -17,9 +17,9 @@
 
 import logging
 
-from net.sf.wspydmin           import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.topology  import Cell
-from net.sf.wspydmin.resources import Resource
+from net.sf.wspydmin                     import AdminConfig, AdminControl, AdminTask
+from net.sf.wspydmin.lang                import Resource
+from net.sf.wspydmin.resources.topology  import Cell
 
 class JAASAuthData(Resource):
 	DEF_CFG_PATH    = '/JAASAuthData:%(alias)s/'
@@ -162,9 +162,9 @@ class Layer(Resource):
 		self.parent  = parent
 		
 	def __getattr__(self, name):
-		if (name in Layer.DEF_CFG_ATTRS.keys()) and (self.__wasattrmap__[name] is None):
+		if (name in Layer.DEF_CFG_ATTRS.keys()) and (self.__was_cfg_attrmap__[name] is None):
 			obj = self.__getattrobj__(name)
-			self.__wasattrmap__[name] = obj
+			self.__was_cfg_attrmap__[name] = obj
 			return obj
 		else:
 			return Resource.__getattr__(self, name)

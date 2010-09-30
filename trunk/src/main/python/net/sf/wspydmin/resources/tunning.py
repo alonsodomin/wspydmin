@@ -15,8 +15,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin           import AdminConfig
-from net.sf.wspydmin.resources import Resource
+from net.sf.wspydmin      import AdminConfig
+from net.sf.wspydmin.lang import Resource
 
 class TunningParams(Resource):
 	DEF_CFG_PATH    = '%(scope)sTuningParams:/'
@@ -65,8 +65,8 @@ class SessionManager(Resource):
 		#self.__tunning__ = TunningParams(self.parent)
 		self.__tunning = TunningParams(self)
 
-	def __postinit__(self):
-		Resource.__postinit__(self)
+	def __wasinit__(self):
+		Resource.__wasinit__(self)
 		self.tunningParams = self.__tunning.__getconfigid__()
 
 	def __getconfigid__(self, id = None):

@@ -17,7 +17,7 @@
 
 import os
 
-from java.lang                                import String
+from java.lang  import String
 
 def str2Array(x):
     if x.startswith('['): # array!

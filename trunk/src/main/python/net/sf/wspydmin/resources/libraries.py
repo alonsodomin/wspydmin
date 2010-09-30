@@ -19,10 +19,10 @@ import sys, traceback
 
 from java.lang                     import IllegalArgumentException, IllegalStateException
 
-from net.sf.wspydmin               import AdminConfig, AdminControl
-from net.sf.wspydmin.topology      import Cell
-from net.sf.wspydmin.resources     import Resource
-from net.sf.wspydmin.classloaders  import ClassLoader
+from net.sf.wspydmin                         import AdminConfig, AdminControl
+from net.sf.wspydmin.lang                    import Resource
+from net.sf.wspydmin.resources.topology      import Cell
+from net.sf.wspydmin.resources.classloaders  import ClassLoader
 
 class Library(Resource):
 	DEF_CFG_PATH    = '/Library:%(name)s/'
@@ -101,9 +101,9 @@ class LibraryRef(Resource):
 			raise IllegalArgumentException, 'Cannot create a library Ref on a (server or application) with no name'
 		self.parent = ClassLoader(targetResourceName)
 	
-	def __postinit__(self):	
-		self.__wassuper__.__postinit__()
-		if (self.__scope__ is None):   # <-- scope = parent.__was_cfg_path__
+	def __wasinit__(self):	
+		self.__wassuper__.__wasinit__()
+		if (self.__was_cfg_parent__ is None):   # <-- scope = parent.__was_cfg_path__
 			raise IllegalStateException, 'Cannot create a library Ref on a (server or application) that does not exist'
 	
 	def __getconfigid__(self):

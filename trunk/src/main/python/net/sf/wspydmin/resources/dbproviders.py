@@ -15,9 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin.topology  import Cell
-from net.sf.wspydmin.resources import Resource
-from net.sf.wspydmin.jdbc      import JDBCProvider, DataSource
+from net.sf.wspydmin.lang                import Resource
+from net.sf.wspydmin.resources.jdbc      import JDBCProvider, DataSource
+from net.sf.wspydmin.resources.topology  import Cell
 
 class OracleJDBCProvider(JDBCProvider):
 	DEF_CFG_TMPL = 'Oracle JDBC Driver'

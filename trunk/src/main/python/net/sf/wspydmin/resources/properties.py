@@ -17,9 +17,8 @@
 
 import sys, copy
 
-from net.sf.wspydmin           import AdminConfig, AdminControl
-from net.sf.wspydmin.lang      import was_resource_type
-from net.sf.wspydmin.resources import Resource
+from net.sf.wspydmin      import AdminConfig, AdminControl
+from net.sf.wspydmin.lang import Resource, was_resource_type
 
 class J2EEPropertyHolderResource(Resource):
 

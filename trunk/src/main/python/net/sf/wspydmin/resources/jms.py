@@ -15,10 +15,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin            import AdminConfig, AdminControl
-from net.sf.wspydmin.topology   import Cell
-from net.sf.wspydmin.resources  import Resource
-from net.sf.wspydmin.pool       import ConnectionPool
+from net.sf.wspydmin                      import AdminConfig, AdminControl
+from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources.topology   import Cell
+from net.sf.wspydmin.resources.pool       import ConnectionPool
 
 class JMSProvider(Resource):
 	DEF_CFG_PATH    = '%(scope)sJMSProvider:%(name)s/'

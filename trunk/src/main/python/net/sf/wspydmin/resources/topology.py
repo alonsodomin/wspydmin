@@ -17,17 +17,16 @@
 
 import logging
 
-from java.lang                   import IllegalArgumentException, IllegalStateException
+from java.lang                             import IllegalArgumentException, IllegalStateException
 
-from net.sf.wspydmin             import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.resources   import Resource
-from net.sf.wspydmin.mbean       import MBean, ResourceMBean 
-from net.sf.wspydmin.listener    import MessageListenerService
-from net.sf.wspydmin.orb         import ObjectRequestBroker
-from net.sf.wspydmin.web         import WebContainer
-from net.sf.wspydmin.transaction import TransactionService
-from net.sf.wspydmin.vars        import VariableSubstitutionEntryHelper
-from net.sf.wspydmin.jvm         import JavaVirtualMachine
+from net.sf.wspydmin                       import AdminConfig, AdminControl, AdminTask
+from net.sf.wspydmin.lang                  import MBean, ResourceMBean, Resource 
+from net.sf.wspydmin.resources.listener    import MessageListenerService
+from net.sf.wspydmin.resources.orb         import ObjectRequestBroker
+from net.sf.wspydmin.resources.web         import WebContainer
+from net.sf.wspydmin.resources.transaction import TransactionService
+from net.sf.wspydmin.resources.vars        import VariableSubstitutionEntryHelper
+from net.sf.wspydmin.resources.jvm         import JavaVirtualMachine
 
 def isManagedServer(serverId): 
     return (serverId.find('servers/ND') != -1) or (serverId.find('/servers/server1') != -1)
@@ -242,7 +241,7 @@ class Cluster(ResourceMBean):
         self.name = name
         self.cell = cell
         
-    def __postinit__(self):
+    def __wasinit__(self):
         clusters = AdminConfig.list('ServerCluster').splitlines()
         for clusterId in clusters:
             clusterName = getClusterName(clusterId)
@@ -256,7 +255,7 @@ class Cluster(ResourceMBean):
         return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.cell.name, self.name))
 
 class Server(ResourceMBean):
-    DEF_SCOPE = '%(parent)sNode:%(nodeName)s/'
+    DEF_CFG_PARENT = '%(parent)sNode:%(nodeName)s/'
     DEF_CFG_PATH    = '%(scope)sServer:%(serverName)s/'
     DEF_CFG_ATTRS = {}
     
