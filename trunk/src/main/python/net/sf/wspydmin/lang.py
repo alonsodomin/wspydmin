@@ -17,11 +17,7 @@
 
 import copy, types
 
-from java.lang             import Class as JavaClass, 
-                                  Array as JavaArray, 
-                                  Exception as JavaException, 
-                                  IllegalArgumentException
-
+from java.lang             import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException
 from com.ibm.ws.scripting  import ScriptingException
 from net.sf.wspydmin       import *
 
@@ -202,6 +198,19 @@ def was_getconfigid(id):
 
 class AbstractResourceError(Exception):
 	pass
+
+class ResourceConfigId:
+    
+    def __init__(self, configid):
+        configidRE = re.compile(r'(\w+)(\(.+\))')
+        matches    = configidRE.findall(configid)
+        if len(matches) > 0:
+            self.resource_type = matches.group(0)
+            self.resource_file = matches.group(1)
+            self.resource_node = matches.group(2)
+    
+    def __repr__(self):
+        return '%s(%s#%s)' % (self.resource_type, self.resource_file, self.resource_node)
 
 class ResourceClassHelper(WasObjectClassHelper):
 	
