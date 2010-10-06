@@ -199,7 +199,7 @@ def was_getconfigid(id):
 class AbstractResourceError(Exception):
 	pass
 
-class ResourceConfigId:
+class ResourceConfigID:
     
     def __init__(self, configid):
         configidRE = re.compile(r'(\w+)(\(.+\))')
@@ -209,7 +209,7 @@ class ResourceConfigId:
             self.resource_file = matches.group(1)
             self.resource_node = matches.group(2)
     
-    def __repr__(self):
+    def __str__(self):
         return '%s(%s#%s)' % (self.resource_type, self.resource_file, self.resource_node)
 
 class ResourceClassHelper(WasObjectClassHelper):
@@ -462,12 +462,13 @@ class MBeanName:
 			for name, value in matches.group(1).groups():
 				self.__dict__[name] = value
 	
-	def __repr__(self):
+	def __str__(self):
 		result = ''
 		count = 0
 		for name, value in self.__dict__.items():
 			if name == 'domainName': continue
-			if count++ > 0: result += ','
+			count = count + 1
+			if count > 0: result += ','
 			result = '%s%(name)s=%(value)s' % { 'name' : name, 'value' : value }
 		result = '%s:%s' % (self.domainName, result)
 		return result
