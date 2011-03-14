@@ -20,7 +20,7 @@ import logging
 from java.lang                             import IllegalArgumentException, IllegalStateException
 
 from net.sf.wspydmin                       import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.lang                  import MBean, ResourceMBean, Resource 
+from net.sf.wspydmin.lang                  import MBean, ResourceMBean, Resource, ResourceConfigID 
 from net.sf.wspydmin.resources.listener    import MessageListenerService
 from net.sf.wspydmin.resources.orb         import ObjectRequestBroker
 from net.sf.wspydmin.resources.web         import WebContainer
@@ -113,7 +113,7 @@ class Cell(Resource):
         raise NotImplementedError, "Can't remove a cell by this call"
 
     def __getconfigid__(self):
-        return AdminConfig.getid(self.__was_cfg_path__)
+        return ResourceConfigID(AdminConfig.getid(self.__was_cfg_path__))
 
     def __getserverids__(self):
         return AdminConfig.list('Server', self.__was_cfg_path__).splitlines()
