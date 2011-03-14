@@ -22,43 +22,16 @@ __status__  = "alpha"
 __version__ = "0.2.0"
 
 import AdminTask, AdminConfig, AdminControl, AdminApp, Help
-
-__WAS_RES_DATATYPES = {
-}
-
-__WAS_RES_OBJTYPES = {
-}
-
-def __was_define_res_type(typename, typeclass):
-	if __WAS_RES_DATATYPES.has_key(typename):
-		raise ResourceDataTypeError, 'Type already registered: %s' % typename
-	__WAS_RES_DATATYPES[typename] = typeclass()
-
-def __was_define_res_class(klass):
-	if __WAS_RES_OBJTYPES.has_key(klass.__name__):
-		raise ResourceDataTypeError, 'Object class already registered: %s' % klass.__name__
-	__WAS_RES_OBJTYPES[klass.__name__] = klass
-
-def was_resource_type(typename):
-	if (typename == '') or (typename is None): return None
-	if typename.endswith('*'):
-		typename = typename[0:-1]
-		return ResourceArrayDataType(was_resource_type(typename))
-	elif __WAS_RES_DATATYPES.has_key(typename):
-		return __WAS_RES_DATATYPES[typename]
-	else:
-		if not __WAS_RES_OBJTYPES.has_key(typename):
-			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
-		return WasObjectDataType(__WAS_RES_OBJTYPES[typename])
+from java.lang             import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException
 
 ########################################################################
-##                   WebSphere Resource data types                    ##
+##                   WebSphere basic data types                       ##
 ########################################################################
 
-class ResourceDataTypeError(Exception):
+class WasDataTypeError(Exception):
 	pass
 
-class ResourceDataType:
+class WasDataType:
 	"""
 	Abstract representation of a WebSphere type.
 	A WebSphere type is any primitive or object supported by
@@ -98,7 +71,7 @@ class ResourceDataType:
 		"""
 		return self.typename
 
-class ResourceArrayDataType(ResourceDataType):
+class WasArrayDataType(WasDataType):
 	"""
 	Typed array implementation
 
@@ -119,7 +92,7 @@ class ResourceArrayDataType(ResourceDataType):
 		if (element_typename is None) or (len(element_typename) == 0):
 			raise IllegalArgumentException, 'Invalid element type received'
 
-		ResourceDataType.__init__(self, element_typename + '*')
+		WasDataType.__init__(self, element_typename + '*')
 		self.element_type = element_type
 
 	def from_str(self, value):
@@ -156,7 +129,7 @@ class ResourceArrayDataType(ResourceDataType):
 		str = str + ']'
 		return str
 
-class BooleanDataType(ResourceDataType):
+class WasBooleanDataType(WasDataType):
 	"""
 	Boolean data types handler
 
@@ -168,7 +141,7 @@ class BooleanDataType(ResourceDataType):
 		"""
 		Initializes the boolean data type
 		"""
-		ResourceDataType.__init__(self, WasBooleanDataType.TYPENAME)
+		WasDataType.__init__(self, WasBooleanDataType.TYPENAME)
 
 	def from_str(self, value):
 		"""
@@ -189,7 +162,7 @@ class BooleanDataType(ResourceDataType):
 		elif value: return 'true'
 		else:     return 'false'
 
-class IntegerDataType(ResourceDataType):
+class WasIntegerDataType(WasDataType):
 	"""
 
 	@author: A. Alonso Dominguez
@@ -197,7 +170,7 @@ class IntegerDataType(ResourceDataType):
 	TYPENAME = 'Integer'
 
 	def __init__(self):
-		ResourceDataType.__init__(self, WasIntegerDataType.TYPENAME)
+		WasDataType.__init__(self, WasIntegerDataType.TYPENAME)
 
 	def from_str(self, value):
 		if (value == '') or (value is None): 
@@ -208,7 +181,7 @@ class IntegerDataType(ResourceDataType):
 		if value is None: return ''
 		return '%i' % value
 
-class StringDataType(ResourceDataType):
+class WasStringDataType(WasDataType):
 	"""
 
 	@author: A. Alonso Dominguez
@@ -216,7 +189,7 @@ class StringDataType(ResourceDataType):
 	TYPENAME = 'String'
 
 	def __init__(self):
-		ResourceDataType.__init__(self, WasStringDataType.TYPENAME)
+		WasDataType.__init__(self, WasStringDataType.TYPENAME)
 
 	def from_str(self, value):
 		if (value == '') or (value is None): return None
@@ -228,14 +201,14 @@ class StringDataType(ResourceDataType):
 		if value is None: return ''
 		return '"' + str(value) + '"'
 
-class ResourceObjectDataType(ResourceDataType):
+class WasObjectDataType(WasDataType):
 	"""
 
 	@author: A. Alonso Dominguez
 	"""
 
 	def __init__(self, klass):
-		ResourceDataType.__init__(self, klass.__name__)
+		WasDataType.__init__(self, klass.__name__)
 		self.klass = klass
 
 	def from_str(self, value):
@@ -246,8 +219,67 @@ class ResourceObjectDataType(ResourceDataType):
 		if value is None: return ''
 		return self.klass.__getconfigid__(value)
 
+########################################################################
+##                   WebSphere Types Registry                         ##
+########################################################################
+
+__WAS_DATATYPES = {
+}
+
+__WAS_OBJTYPES = {
+}
+
+def __was_define_type(typename, typeclass):
+	if __WAS_DATATYPES.has_key(typename):
+		raise WasDataTypeError, 'Type already registered: %s' % typename
+	__WAS_DATATYPES[typename] = typeclass()
+
+def __was_define_class(klass):
+	if __WAS_OBJTYPES.has_key(klass.__name__):
+		raise WasDataTypeError, 'Object class already registered: %s' % klass.__name__
+	__WAS_OBJTYPES[klass.__name__] = klass
+	
 # Define WebSphere's configuration primitive types
-__was_define_res_type(BooleanDataType.TYPENAME, BooleanDataType)
-__was_define_res_type(IntegerDataType.TYPENAME, IntegerDataType)
-__was_define_res_type(StringDataType.TYPENAME, StringDataType)
+__was_define_type(WasBooleanDataType.TYPENAME, WasBooleanDataType)
+__was_define_type(WasIntegerDataType.TYPENAME, WasIntegerDataType)
+__was_define_type(WasStringDataType.TYPENAME, WasStringDataType)
+
+########################################################################
+##                      Utility functions                             ##
+########################################################################
+
+def was_getconfigid(id):
+	if id is None: return None
+	
+	try:
+		obj = AdminConfig.getid(id).splitlines()[0]
+		if (obj is None) or (obj == ''):
+			obj = None
+		return obj
+	except IndexError:
+		pass
+	except ScriptingException:
+		pass
+	return None
+
+def was_type(typename):
+	if (typename == '') or (typename is None): return None
+	if typename.endswith('*'):
+		typename = typename[0:-1]
+		return WasArrayDataType(was_type(typename))
+	elif __WAS_DATATYPES.has_key(typename):
+		return __WAS_DATATYPES[typename]
+	else:
+		if not __WAS_OBJTYPES.has_key(typename):
+			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
+		return WasObjectDataType(__WAS_OBJTYPES[typename])
+
+def java_type(typename):
+	if (typename == '') or (typename is None): return None
+	if typename.startswth('java.'):
+		return JavaClass.forName(typename)
+	if typename.startswith('[L'):
+		elementType = java_type(typename[2:-1])
+		return JavaArray.new(elementType, 0).getClass()
+	return None
 

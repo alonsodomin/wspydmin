@@ -21,15 +21,6 @@ from java.lang             import Class as JavaClass, Array as JavaArray, Except
 from com.ibm.ws.scripting  import ScriptingException
 from net.sf.wspydmin       import *
 
-def java_type(typename):
-	if (typename == '') or (typename is None): return None
-	if typename.startswth('java.'):
-		return JavaClass.forName(typename)
-	if typename.startswith('[L'):
-		elementType = java_type(typename[2:-1])
-		return JavaArray.new(elementType, 0).getClass()
-	return None
-
 ########################################################################
 ##                      WebSphere metaclasses                         ##
 ########################################################################
@@ -112,7 +103,7 @@ class WasObjectClass:
 		self.__bases__    = bases
 		self.__realdict__ = dict
 		
-		was_define_class(self)
+		__was_define_class(self)
 		self.__inited = 1
 	
 	def __getattr__(self, name):
@@ -155,12 +146,7 @@ class WasObjectClass:
 ##
 # Base WAS object class which should be used as the
 # primary super class for any WAS instance
-__WasObject = WasObjectClass('WasObject')
-
-class WasObject(__WasObject):
-	
-	def __init__(self):
-		pass
+WasObject = WasObjectClass('WasObject')
 
 class ChainedMethodInvoker:
 	def __init__(self, metaclass, methodname, instances):
@@ -173,24 +159,6 @@ class ChainedMethodInvoker:
 		for inst in self.instances:
 			retval = apply(self.methodname, (inst,) + args, kwargs)
 		return retval
-
-########################################################################
-##                      Utility functions                             ##
-########################################################################
-
-def was_getconfigid(id):
-	if id is None: return None
-	
-	try:
-		obj = AdminConfig.getid(id).splitlines()[0]
-		if (obj is None) or (obj == ''):
-			obj = None
-		return obj
-	except IndexError:
-		pass
-	except ScriptingException:
-		pass
-	return None
 
 ########################################################################
 ##                      Resource Classes                              ##
@@ -225,7 +193,7 @@ class ResourceClassHelper(WasObjectClassHelper):
 			for atype in attrdef.splitlines():
 				name = atype.split()[0]
 				value = atype.split()[1]			
-				self.__wasclass__.__was_cfg_attrtypes__[name] = was_resource_type(value)
+				self.__wasclass__.__was_cfg_attrtypes__[name] = was_type(value)
 
 class ResourceClass(WasObjectClass):
 	__helper__ = ResourceClassHelper
@@ -233,17 +201,19 @@ class ResourceClass(WasObjectClass):
 	def __init__(self, name, bases = (), dict = {}):
 		WasObjectClass.__init__(self, name, bases, dict)
 
-class Resource(WasObject):
+__Resource = ResourceClass('__Resource', (WasObject,))
+
+class Resource(__Resource):
 	__TEMPLATES         = {}
 	__parent_attrname__ = 'parent'
 	
-	ATTR_ID    = 'DEF_CFG_PATH'
-	ATTR_SCOPE = 'DEF_CFG_PARENT'
-	ATTR_ATTRS = 'DEF_CFG_ATTRS'
-	ATTR_TMPL  = 'DEF_CFG_TMPL'
+	ATTR_PATH    = 'DEF_CFG_PATH'
+	ATTR_PARENT  = 'DEF_CFG_PARENT'
+	ATTR_ATTRS   = 'DEF_CFG_ATTRS'
+	ATTR_TMPL    = 'DEF_CFG_TMPL'
 	
 	def __init__(self):
-		if not hasattr(self, Resource.ATTR_ID):
+		if not hasattr(self, Resource.ATTR_PATH):
 			raise AbstractResourceError, self.__was_cfg_type__
 
 		try:	
@@ -251,19 +221,21 @@ class Resource(WasObject):
 		except AttributeError:
 			self.__was_cfg_attrmap = {}
 		
-		# Container for attribute data types
-		self.__was_cfg_attrtypes__ = {}		
-		
 	def __wasinit__(self):
 		self.__hydrate__()
-		defaults = AdminConfig.defaults(self.__was_cfg_type__)
+		attrvalues = []
 		if self.exists():
-			values = AdminConfig.show(self.__getconfigid__()).splitlines()
-			for name in self.__was_cfg_attrtypes__.keys():
-				pass
-			self.__loadattrs__()
+			attrvalues = AdminConfig.show(self.__getconfigid__()).splitlines()
 		else:
-			self.__loaddefaults__()
+			attrvalues = AdminConfig.defaults(self.__was_cfg_type__).splitlines()
+		for attr in attrvalues:
+			if not self.__was_cfg_attrmap.has_key(attr): continue
+			if not self.__was_cfg_attrmap[attr] is None: continue
+			if attr.startswith('[') and attr.endswith(']'):
+				attr = attr[1:-1]               # Drop '[' and ']' from attribute string
+			name = attr.split(None, 1)[0]
+			if not skip_attrs.contains(name):
+				self.__was_cfg_attrmap[name] = self.__parseattr__(name, attr.split(None, 1)[1])
 	
 	def __create__(self, update):
 		attributes = self.__collectattrs__()
@@ -292,7 +264,7 @@ class Resource(WasObject):
 	
 	def __getattr__(self, name):
 		try:
-			return WasObject.__getattr__(self, name)
+			return __Resource.__getattr__(self, name)
 		except AttributeError:
 			if self.__was_cfg_attrmap.has_key(name):
 				val = self.__was_cfg_attrmap[name]
@@ -307,21 +279,7 @@ class Resource(WasObject):
 				value = self.__parseattr__(name, value)
 			self.__was_cfg_attrmap[name] = value
 		else:
-			WasObject.__setattr__(self, name, value)
-	
-	def __loadattrs__(self, skip_attrs = []):
-		if not self.exists(): return
-		for attr in AdminConfig.show(self.__getconfigid__()).splitlines():
-			if not self.__was_cfg_attrmap.has_key(attr): continue
-			if not self.__was_cfg_attrmap[attr] is None: continue
-			if attr.startswith('[') and attr.endswith(']'):
-				attr = attr[1:-1]               # Drop '[' and ']' from attribute string
-			name = attr.split(None, 1)[0]
-			if not skip_attrs.contains(name):
-				self.__was_cfg_attrmap[name] = self.__parseattr__(name, attr.split(None, 1)[1])
-	
-	def __loaddefaults__(self): 
-		pass
+			__Resource.__setattr__(self, name, value)
 	
 	def __dumpattrs__(self):
 		str = ''
@@ -348,6 +306,8 @@ class Resource(WasObject):
 		if (id is None) and hasattr(self, self.__parent_attrname__):
 			parent = getattr(self, self.__parent_attrname__)
 			id = parent.__getconfigid__()
+		else:
+			id = ResourceConfigID(id)
 		return id
 	
 	def __hydrate__(self):
@@ -382,7 +342,7 @@ class Resource(WasObject):
 		mydict['scope'] = self.__was_cfg_parent__
 		
 		# Hydrate object id
-		self.__was_cfg_path__ = getattr(self, Resource.ATTR_ID) % mydict
+		self.__was_cfg_path__ = getattr(self, Resource.ATTR_PATH) % mydict
 		
 		# Initialize template map for this resource type
 		if not Resource.__TEMPLATES.has_key(self.__was_cfg_type__):
@@ -528,7 +488,7 @@ class MBeanClass(WasObjectClass):
         WasObjectClass.__init__(self, name, bases, dict)
 
 
-__MBean = MBeanClass('__MBean',         (WasObject,))   
+__MBean = MBeanClass('__MBean', (WasObject,))   
 
 class MBean(__MBean):
 	pass
