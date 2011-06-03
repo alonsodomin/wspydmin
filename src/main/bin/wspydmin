@@ -17,13 +17,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-DISCLAIMER <<EOF
-WSPydmin  Copyright (C) 2010  Antonio Alonso Domínguez
+#DISCLAIMER<<EOF
+#WSPydmin  Copyright (C) 2010  Antonio Alonso Domínguez
+#
+#This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+#This is free software, and you are welcome to redistribute it
+#under certain conditions; type `show c' for details.
+#EOF
 
-This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
-This is free software, and you are welcome to redistribute it
-under certain conditions; type `show c' for details.
-EOF
+# OS specific support.  $var _must_ be set to either true or false.
+cygwin=false;
+mingw=false
+case "`uname`" in
+  CYGWIN*) cygwin=true ;;
+  MINGW*) mingw=true;;
+esac
 
 # Resolve links - $0 may be a softlink - and obtain
 # the root directory of the script environment
@@ -40,7 +48,17 @@ while [ -h "${PRG}" ]; do
 	fi
 done
 
-WSPYDMIN_HOME=$(dirname ${PRG})
+saveddir=`pwd`
+WSPYDMIN_HOME=$(dirname ${PRG})/..
+WSPYDMIN_HOME=$(cd "$WSPYDMIN_HOME" && pwd)
+cd $saveddir
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+  [ -n "$WSPYDMIN_HOME" ] &&
+    WSPYDMIN_HOME=`cygpath --unix "$WSPYDMIN_HOME"`
+fi
+
 WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
 WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
 WSPYDMIN_INCLUDE="${WSPYMIN_HOME}/include"
@@ -51,35 +69,35 @@ if [ ! -f "${WSPYDMIN_CONF}" ]; then
 fi
 source ${WSPYDMIN_CONF}
 
+if $cygwin; then
+  [ -n "$WAS_HOME" ] &&
+    WAS_HOME=`cygpath --unix "$WAS_HOME"`
+fi
+
 #
 # Check environment configuration
 #
 if [ -z "${WAS_HOME}" ]; then
 	echo "ERROR: Configuration variable WAS_HOME was not set."
-	exit 1
+	exit 2
 fi
 
 if [ ! -d "${WAS_HOME}" ]; then
 	echo "ERROR: WAS_HOME: ${WAS_HOME} is not a directory."
-	exit 1
+	exit 3
 fi
 
 WSADMIN_CMD="${WAS_HOME}/bin/wsadmin.sh"
 
-if [ ! -f "${WASADMIN_CMD}" ]; then
+if [ ! -f "${WSADMIN_CMD}" ]; then
 	echo "ERROR: WAS scripting interpreter '${WSADMIN_CMD}' doesn't exists."
-	exit 1
+	exit 4
 fi
-
-export WAS_HOME
-export WSPYDMIN_HOME
-export WSPYDMIN_LIB
-export WSPYDMIN_INCLUDE
 
 #
 # Parse command line arguments to override defaults
 #
-WSADMIN_ARGS="-lang jython -profile ${WSPYMIN_LIB}/wasprofile.py"
+WSADMIN_ARGS=
 WSADMIN_CLASSPATH=
 
 SCRIPT_ARGS=
@@ -91,7 +109,7 @@ while [ ! -z "$1" ]; do
 			shift
 			if [ "$1" != "jython" ]; then
 				echo "ERROR: WSPydmin should always use Jython as script language."
-				exit 1 
+				exit 5 
 			fi
 			;;
 		"-profile")
@@ -121,7 +139,7 @@ while [ ! -z "$1" ]; do
 				SCRIPT_NAME=$1
 			else
 				echo "ERROR: Which one of these scripts you want to run: '${SCRIPT_NAME}' or '$1'?"
-				exit 1
+				exit 6
 			fi
 			;;
 		*)
@@ -155,27 +173,58 @@ fi
 #
 
 # Fill wsadmin.sh classpath
-for f in "${WSPYDMIN_INCLUDE}/java/*.jar"; do
-    if [ "${WSADMIN_CLASSPATH}" == "" ]; then
-        WSADMIN_CLASSPATH=$f
-    else
-        WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
-    fi
-done
+if [ -d "${WSPYDMIN_INCLUDE}" ]; then
+  for f in $(ls "${WSPYDMIN_INCLUDE}/java/*.jar"); do
+      if [ "${WSADMIN_CLASSPATH}" == "" ]; then
+          WSADMIN_CLASSPATH=$f
+      else
+          WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
+      fi
+  done
+fi
 
-# Normalize script pathname
-SCRIPT_NAME=$(readlink -n -f ${SCRIPT_NAME})
-SCRIPT_HOME=$(dirname ${SCRIPT_NAME})
+if [ ! -z "${SCRIPT_NAME}" ]; then
+  # Normalize script pathname
+  SCRIPT_NAME=$(readlink -n -f ${SCRIPT_NAME})
+  SCRIPT_HOME=$(dirname ${SCRIPT_NAME})
+fi
+
+# For Cygwin, ensure paths are in Windows format before invoking anything
+if $cygwin ; then
+  [ -n "$WSPYDMIN_HOME" ] &&
+    WSPYDMIN_HOME=`cygpath --path --windows "$WSPYDMIN_HOME"`
+  [ -n "$WSPYDMIN_LIB" ] &&
+    WSPYDMIN_LIB=`cygpath --path --windows "$WSPYDMIN_LIB"`
+  [ -n "$WAS_HOME" ] &&
+    WAS_HOME=`cygpath --path --windows "$WAS_HOME"`
+  #[ -n "$WSADMIN_CMD" ] &&
+  #  WSADMIN_CMD=`cygpath --path --windows "$WSADMIN_CMD"`
+  [ -n "$WSADMIN_CLASSPATH" ] &&
+    WSADMIN_CLASSPATH=`cygpath --path --windows "$WSADMIN_CLASSPATH"`
+  [ -n "$SCRIPT_HOME" ] &&
+    SCRIPT_HOME=`cygpath --path --windows "$SCRIPT_HOME"`
+  [ -n "$SCRIPT_NAME" ] &&
+    SCRIPT_NAME=`cygpath --path --windows "$SCRIPT_NAME"`
+fi
+
+export WAS_HOME
+export WSPYDMIN_HOME
+export WSPYDMIN_LIB
+export WSPYDMIN_INCLUDE
 
 if [ ! -z "${SCRIPT_HOME}" ]; then
     export SCRIPT_HOME
 fi
 
-if [ -z "${SCRIPT_NAME}" ]; then
-	echo $DISCLAIMER
-	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} ${SCRIPT_ARGS}
-	exit 0
-else
-	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
-	exit $?
+if [ ! -z "${WSADMIN_CLASSPATH}" ]; then
+  WSADMIN_ARGS="${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH}"
 fi
+
+if [ -z "${SCRIPT_NAME}" ]; then
+  #echo $DISCLAIMER
+  ${WSADMIN_CMD} -lang jython -profile ${WSPYMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} ${SCRIPT_ARGS}
+else
+  ${WSADMIN_CMD} -lang jython -profile ${WSPYMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
+fi
+
+exit $?
