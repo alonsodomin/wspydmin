@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import copy, types
+import copy, types, re
 
 from java.lang             import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException
 from com.ibm.ws.scripting  import ScriptingException
@@ -74,11 +74,12 @@ class WasObjectClassHelper:
 				ga = self.__wasclass__.__getattr__('__usergetattr__')
 			except (KeyError, AttributeError):
 				return self.__missedattr__(name)
-			return ga(self, name)
-		
-		if type(raw) != types.FunctionType:
-			return raw
-		return self.__methodwrapper__(raw, self)
+			else:
+				return ga(self, name)
+		else:
+			if type(raw) != types.FunctionType:
+				return raw
+			return self.__methodwrapper__(raw, self)
 	
 	def __define_instance__(self):
 		pass
@@ -167,18 +168,38 @@ class ChainedMethodInvoker:
 class AbstractResourceError(Exception):
 	pass
 
+class ResourcePathID:
+	
+	def __init__(self, elem_type, elem_name, parent_path = None):
+		self.elem_type   = elem_type
+		self.elem_name   = elem_name
+		self.parent_path = parent_path
+	
+	def __str__(self):
+		str = ''
+		if not self.parent_path is None:
+			str = self.parent_path.__str__()
+		str += ('/%s:%s' % (self.elem_type, self.elem_name))
+		return str
+
 class ResourceConfigID:
     
+    __STR_PATTERN = '%(name)s(%(path)s|%(file)s#%(node)s)'
+    
     def __init__(self, configid):
-        configidRE = re.compile(r'(\w+)(\(.+\))')
+    	if configid is None or configid == '':
+    		raise IllegalArgumentException, "'configid' can't be null"
+    	
+        configidRE = re.compile(r'(.+)\((.+)\|(.+)\#(.+)\)')
         matches    = configidRE.findall(configid)
         if len(matches) > 0:
-            self.resource_type = matches.group(0)
-            self.resource_file = matches.group(1)
-            self.resource_node = matches.group(2)
+            self.name = matches.group(0)
+            self.path = matches.group(1)
+            self.file = matches.group(2)
+            self.node = matches.group(3)
     
     def __str__(self):
-        return '%s(%s#%s)' % (self.resource_type, self.resource_file, self.resource_node)
+        return ResourceConfigID.__STR_PATTERN % self.__dict__
 
 class ResourceClassHelper(WasObjectClassHelper):
 	
@@ -407,6 +428,9 @@ class Resource(__Resource):
 	def removeAll(self):
 		self.__remove__(1)
 
+
+def was_resource_pathid(pathid):
+	pass
 
 ########################################################################
 ##                         MBean Classes                              ##

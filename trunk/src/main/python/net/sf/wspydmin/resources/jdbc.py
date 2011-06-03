@@ -36,10 +36,10 @@ class J2CResourceAdapter(Resource):
         'name' : None
     }
     
-    def __init__(self, name):
+    def __init__(self, name, cell = Cell()):
         Resource.__init__(self)
         self.name   = name
-        self.parent = Cell()
+        self.parent = cell
 
 
 class J2CRelationalResourceAdapter(J2CResourceAdapter):

@@ -22,7 +22,7 @@ __status__  = "alpha"
 __version__ = "0.2.0"
 
 import AdminTask, AdminConfig, AdminControl, AdminApp, Help
-from java.lang             import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException
+from java.lang import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException, ClassNotFoundException
 
 ########################################################################
 ##                   WebSphere basic data types                       ##
@@ -105,8 +105,7 @@ class WasArrayDataType(WasDataType):
 		obj = []
 		if value.startswith('[') and value.endswith(']'):
 			value = value[1:len(value)-1]
-		values = value.split(' ,')
-		for elem in values:
+		for elem in value.split(' ,'):
 			obj.append(self.element_type.from_str(elem))
 		return obj
 
@@ -123,7 +122,7 @@ class WasArrayDataType(WasDataType):
 			for elem in value:
 				if count > 0: str = str + ','
 				str = str + self.element_type.to_str(elem)
-				count = count + 1
+				count += 1
 		else:
 			str = str + self.element_type.to_str(value)
 		str = str + ']'
@@ -276,8 +275,10 @@ def was_type(typename):
 
 def java_type(typename):
 	if (typename == '') or (typename is None): return None
-	if typename.startswth('java.'):
+	try:
 		return JavaClass.forName(typename)
+	except ClassNotFoundException:
+		pass
 	if typename.startswith('[L'):
 		elementType = java_type(typename[2:-1])
 		return JavaArray.new(elementType, 0).getClass()

@@ -28,7 +28,7 @@ sys.path.append(wsPydminLib)
 
 # Load external includes into system path
 wsPydminInclude = os.environ.get('WSPYDMIN_INCLUDE')
-if not wsPydminInclude is not None:
+if not wsPydminInclude is None:
 	for include in glob.glob("%s/python/*" % wsPydminInclude):
 		print "WSPydmin has included library found at '%s'" % include
 		sys.path.append(include)
