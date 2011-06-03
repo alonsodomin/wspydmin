@@ -60,8 +60,8 @@ if $cygwin ; then
 fi
 
 WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
-WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
-WSPYDMIN_INCLUDE="${WSPYMIN_HOME}/include"
+WSPYDMIN_LIB="${WSPYDMIN_HOME}/python"
+WSPYDMIN_INCLUDE="${WSPYDMIN_HOME}/include"
 
 if [ ! -f "${WSPYDMIN_CONF}" ]; then
 	echo "ERROR: Configuration file '${WSPYDMIN_CONF}' not found"
@@ -173,7 +173,7 @@ fi
 #
 
 # Fill wsadmin.sh classpath
-if [ -d "${WSPYDMIN_INCLUDE}" ]; then
+if [ -d "${WSPYDMIN_INCLUDE}/java" ]; then
   for f in $(ls "${WSPYDMIN_INCLUDE}/java/*.jar"); do
       if [ "${WSADMIN_CLASSPATH}" == "" ]; then
           WSADMIN_CLASSPATH=$f
@@ -192,19 +192,21 @@ fi
 # For Cygwin, ensure paths are in Windows format before invoking anything
 if $cygwin ; then
   [ -n "$WSPYDMIN_HOME" ] &&
-    WSPYDMIN_HOME=`cygpath --path --windows "$WSPYDMIN_HOME"`
+    WSPYDMIN_HOME=`cygpath --windows "$WSPYDMIN_HOME"`
   [ -n "$WSPYDMIN_LIB" ] &&
-    WSPYDMIN_LIB=`cygpath --path --windows "$WSPYDMIN_LIB"`
+    WSPYDMIN_LIB=`cygpath --windows "$WSPYDMIN_LIB"`
+  [ -n "$WSPYDMIN_INCLUDE" ] &&
+    WSPYDMIN_INCLUDE=`cygpath --windows "$WSPYDMIN_INCLUDE"`
   [ -n "$WAS_HOME" ] &&
-    WAS_HOME=`cygpath --path --windows "$WAS_HOME"`
+    WAS_HOME=`cygpath --windows "$WAS_HOME"`
   #[ -n "$WSADMIN_CMD" ] &&
   #  WSADMIN_CMD=`cygpath --path --windows "$WSADMIN_CMD"`
   [ -n "$WSADMIN_CLASSPATH" ] &&
     WSADMIN_CLASSPATH=`cygpath --path --windows "$WSADMIN_CLASSPATH"`
   [ -n "$SCRIPT_HOME" ] &&
-    SCRIPT_HOME=`cygpath --path --windows "$SCRIPT_HOME"`
+    SCRIPT_HOME=`cygpath --windows "$SCRIPT_HOME"`
   [ -n "$SCRIPT_NAME" ] &&
-    SCRIPT_NAME=`cygpath --path --windows "$SCRIPT_NAME"`
+    SCRIPT_NAME=`cygpath --windows "$SCRIPT_NAME"`
 fi
 
 export WAS_HOME
@@ -222,9 +224,9 @@ fi
 
 if [ -z "${SCRIPT_NAME}" ]; then
   #echo $DISCLAIMER
-  ${WSADMIN_CMD} -lang jython -profile ${WSPYMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} ${SCRIPT_ARGS}
+  ${WSADMIN_CMD} -lang jython -profile ${WSPYDMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} ${SCRIPT_ARGS}
 else
-  ${WSADMIN_CMD} -lang jython -profile ${WSPYMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
+  ${WSADMIN_CMD} -lang jython -profile ${WSPYDMIN_LIB}/wasprofile.py ${WSADMIN_ARGS} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
 fi
 
 exit $?
