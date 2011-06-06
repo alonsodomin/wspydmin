@@ -15,14 +15,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin.lang                import Resource
+from net.sf.wspydmin.resources           import Resource
 from net.sf.wspydmin.resources.jdbc      import JDBCProvider, DataSource
-from net.sf.wspydmin.resources.topology  import Cell
+from net.sf.wspydmin.resources.topology  import CURRENT_CELL
 
 class OracleJDBCProvider(JDBCProvider):
 	DEF_CFG_TMPL = 'Oracle JDBC Driver'
 
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JDBCProvider.__init__(self, OracleJDBCProvider.DEF_CFG_TMPL, parent)
 
 	def __loaddefaults__(self):
@@ -40,7 +40,7 @@ class OracleJDBCProvider(JDBCProvider):
 class OracleXaJDBCProvider(JDBCProvider):
 	DEF_CFG_TMPL = 'Oracle JDBC Driver (XA)'
 
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JDBCProvider.__init__(self, OracleXaJDBCProvider.DEF_CFG_TMPL, parent)
 
 	def __loaddefaults__(self):
@@ -58,7 +58,7 @@ class OracleXaJDBCProvider(JDBCProvider):
 
 class DB2UDBJDBCProvider(JDBCProvider):
 	
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JDBCProvider.__init__(self, 'DB2 UDB for iSeries JDBC Provider', parent)
 
 	def __loaddefaults__(self):
@@ -69,7 +69,7 @@ class DB2UDBJDBCProvider(JDBCProvider):
 
 class IngressJDBCProvider(JDBCProvider):
 	
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JDBCProvider.__init__(self, 'Ingress JDBC Provider', parent)
 
 	def __loaddefaults__(self):
@@ -81,7 +81,7 @@ class IngressJDBCProvider(JDBCProvider):
 
 class SybaseJDBCProvider(JDBCProvider):
 	
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JDBCProvider.__init__(self, 'Sybase JDBC 3 Driver', parent)
 	
 	def __loaddefaults__(self):

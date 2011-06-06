@@ -16,6 +16,10 @@
 #
 
 import sys, os, glob
+wsPydminHome = os.environ.get('WSPYDMIN_HOME')
+if wsPydminHome is None:
+	print "ERROR: Environment variable 'WSPYDMIN_HOME' must be set."
+	sys.exit(2)
 
 wsPydminLib = os.environ.get('WSPYDMIN_LIB')
 if wsPydminLib is None:
@@ -29,9 +33,8 @@ sys.path.append(wsPydminLib)
 # Load external includes into system path
 wsPydminInclude = os.environ.get('WSPYDMIN_INCLUDE')
 if not wsPydminInclude is None:
-	for include in glob.glob("%s/python/*" % wsPydminInclude):
-		print "WSPydmin has included library found at '%s'" % include
-		sys.path.append(include)
+	print "WSPydmin has included path at '%s/python'" % wsPydminInclude
+	sys.path.append('%s/python' % wsPydminInclude)
 
 scriptHome = os.environ.get('SCRIPT_HOME')
 if not scriptHome is None:
@@ -49,3 +52,7 @@ try:
 except :
 	sys.modules['AdminTask']    = None
 sys.modules['Help']         = Help
+
+# Initialize logging configuration
+import logging
+logging.basicConfig(filename = '%s/logs/wspydmin.out' % wsPydminHome, level = logging.DEBUG)

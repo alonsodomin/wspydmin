@@ -16,8 +16,8 @@
 #
 
 from net.sf.wspydmin                      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                 import Resource
-from net.sf.wspydmin.resources.topology   import Cell
+from net.sf.wspydmin.resources            import Resource
+from net.sf.wspydmin.resources.topology   import CURRENT_CELL
 from net.sf.wspydmin.resources.pool       import ConnectionPool
 
 class JMSProvider(Resource):
@@ -26,7 +26,7 @@ class JMSProvider(Resource):
 				'name' : None
 	}
 	
-	def __init__(self, name, parent = Cell()):
+	def __init__(self, name, parent = CURRENT_CELL):
 		Resource.__init__(self)
 		self.name   = name
 		self.parent = parent
@@ -34,7 +34,7 @@ class JMSProvider(Resource):
 class MQJMSProvider(JMSProvider):
 	JMS_PROVIDER_NAME = 'WebSphere MQ JMS Provider'
 	
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		JMSProvider.__init__(self, MQJMSProvider.JMS_PROVIDER_NAME, parent)
 
 class MQQueueConnectionFactory(Resource):

@@ -18,7 +18,7 @@
 import sys, traceback, logging
 
 from net.sf.wspydmin               import AdminConfig, AdminControl
-from net.sf.wspydmin.lang          import Resource	
+from net.sf.wspydmin.resources     import Resource	
 
 class ClassLoader(Resource):
 	DEF_CFG_PATH    = '/Classloader:/'

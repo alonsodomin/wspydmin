@@ -15,10 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang import Resource
+from net.sf.wspydmin           import AdminConfig, AdminControl
+from net.sf.wspydmin.resources import Resource
 
 class TransactionService(Resource):
+	DEF_CFG_TYPE    = 'TransactionService'
 	DEF_CFG_PATH    = '/TransactionService:/'
 	DEF_CFG_ATTRS = {
                 'LPSHeuristicCompletion' : 'ROLLBACK',

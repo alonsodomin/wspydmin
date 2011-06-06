@@ -17,13 +17,13 @@
 
 import sys, copy
 
-from net.sf.wspydmin      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang import Resource, was_resource_type
+from net.sf.wspydmin           import AdminConfig, AdminControl, was_type
+from net.sf.wspydmin.resources import Resource, ResourceClass, ResourceClassHelper
 
-class J2EEPropertyHolderResource(Resource):
+class J2EEPropertyHolderClassHelper(ResourceClassHelper):
 
-	def __init__(self):
-		Resource.__init__(self)
+	def __helperinit__(self, klass):
+		ResourceClassHelper.__helperinit__(self, klass)
 		if hasattr(self, 'DEF_PROPS'):
 			self.__defaults = copy.copy(getattr(self, 'DEF_PROPS'))
 		else:
@@ -69,10 +69,18 @@ class J2EEPropertyHolderResource(Resource):
 			raise AttributeError, name
 		self.__propertySet.addProperty(name, value)
 
-class PropertyHolderResource(Resource):
+class J2EEPropertyHolderClass(ResourceClass):
+	__helper__ = J2EEPropertyHolderClassHelper
 	
-	def __init__(self):
-		Resource.__init__(self)
+	def __init__(self, name, bases = (), dict = {}):
+		ResourceClass.__init__(self, name, bases, dict)
+
+J2EEPropertyHolderResource = J2EEPropertyHolderClass('J2EEPropertyHolderResource', (Resource,))
+
+class PropertyHolderClassHelper(ResourceClassHelper):
+	
+	def __helperinit__(self, klass):
+		ResourceClassHelper.__helperinit__(self, klass)
 		self.__properties = {}
 	
 	def __create__(self, update):
@@ -133,7 +141,16 @@ class PropertyHolderResource(Resource):
 			raise AttributeError, name
 		self.__properties[name].value = value
 
+class PropertyHolderClass(ResourceClass):
+	__helper__ = PropertyHolderClassHelper
+	
+	def __init__(self, name, bases = (), dict = {}):
+		ResourceClass.__init__(self, name, bases, dict)
+
+PropertyHolderResource = PropertyHolderClass('PropertyHolderResource', (Resource,))
+
 class Property(Resource):
+	DEF_CFG_TYPE    = 'Property'
 	DEF_CFG_PATH    = '%(scope)sProperty:%(name)s/'
 	DEF_CFG_ATTRS = {
                         'name' : None,
@@ -155,6 +172,7 @@ class Property(Resource):
 		return None
 
 class J2EEResourceProperty(Resource):
+	DEF_CFG_TYPE    = 'J2EEResourceProperty'
 	DEF_CFG_PATH    = '%(scope)sJ2EEResourceProperty:/'
 	DEF_CFG_ATTRS = {
              'name' : None,
@@ -176,10 +194,11 @@ class J2EEResourceProperty(Resource):
 
 	def __setattr__(self, name, value):
 		if name == 'type':
-			value = was_resource_type(value)
+			value = was_type(value)
 		Resource.__setattr__(self, name, value)
 
 class J2EEResourcePropertySet(Resource):
+	DEF_CFG_TYPE    = 'J2EEResourcePropertySet'
 	DEF_CFG_PATH    = '%(scope)sJ2EEResourcePropertySet:/'
 	DEF_CFG_ATTRS = {}
 
