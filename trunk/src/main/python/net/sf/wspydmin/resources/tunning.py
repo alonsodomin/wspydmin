@@ -15,10 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from net.sf.wspydmin      import AdminConfig
-from net.sf.wspydmin.lang import Resource
+from net.sf.wspydmin                    import AdminConfig
+from net.sf.wspydmin.resources          import Resource
 
 class TunningParams(Resource):
+	DEF_CFG_TYPE    = 'TunningParams'
 	DEF_CFG_PATH    = '%(scope)sTuningParams:/'
 	DEF_CFG_ATTRS = {
                 "allowOverflow" : "false",
@@ -40,6 +41,7 @@ class TunningParams(Resource):
 		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__())
 
 class SessionManager(Resource):
+	DEF_CFG_TYPE    = 'SessionManager'
 	DEF_CFG_PATH    = '%(scope)sSessionManager:/'
 	DEF_CFG_ATTRS = {
             "accessSessionOnTimeout" : "true",
@@ -85,6 +87,7 @@ class SessionManager(Resource):
 			Resource.__setattr__(self, name, value)
 
 class ThreadPool(Resource):
+	DEF_CFG_TYPE    = 'ThreadPool'
 	DEF_CFG_PATH    = '/ThreadPool:%(name)s/'
 	DEF_CFG_ATTRS = {
       "customProperties" : None,

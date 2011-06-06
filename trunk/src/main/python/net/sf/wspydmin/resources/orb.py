@@ -16,10 +16,11 @@
 #
 
 from net.sf.wspydmin                      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources            import Resource
 from net.sf.wspydmin.resources.tunning    import ThreadPool
 
 class ObjectRequestBroker(Resource):
+	DEF_CFG_TYPE    = 'ObjectRequestBroker'
 	DEF_CFG_PATH    = '/ObjectRequestBroker:/'
 	DEF_CFG_ATTRS = {
               'commTraceEnabled' : 'false',

@@ -20,13 +20,14 @@ import logging
 from java.lang                             import IllegalArgumentException, IllegalStateException
 
 from net.sf.wspydmin                       import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.lang                  import MBean, ResourceMBean, Resource, ResourceConfigID 
+from net.sf.wspydmin.mbeans                import MBean
+from net.sf.wspydmin.resources             import Resource, ResourceConfigID 
 from net.sf.wspydmin.resources.listener    import MessageListenerService
 from net.sf.wspydmin.resources.orb         import ObjectRequestBroker
 from net.sf.wspydmin.resources.web         import WebContainer
 from net.sf.wspydmin.resources.transaction import TransactionService
-from net.sf.wspydmin.resources.vars        import VariableSubstitutionEntryHelper
 from net.sf.wspydmin.resources.jvm         import JavaVirtualMachine
+from net.sf.wspydmin.utils                 import VariableSubstitutionEntryHelper
 
 def isManagedServer(serverId): 
     return (serverId.find('servers/ND') != -1) or (serverId.find('/servers/server1') != -1)
@@ -97,6 +98,7 @@ def changePorts(servers, endPointPorts):
             modifyServerPort(getServerName(srvId), getNodeName(srvId), endPointName, newPort)
 
 class Cell(Resource):
+    DEF_CFG_TYPE    = 'Cell'
     DEF_CFG_PATH    = '/Cell:%(name)s/'
     DEF_CFG_ATTRS = {
         'name' : None
@@ -193,7 +195,11 @@ class Cell(Resource):
     def getSharedLibraryReferenceIds(self):
         return AdminConfig.list('LibraryRef', self.__was_cfg_path__).splitlines()
 
+global CURRENT_CELL
+CURRENT_CELL = Cell()
+
 class VirtualHost(Resource):
+    DEF_CFG_TYPE    = 'VirtualHost'
     DEF_CFG_PATH    = '/VirtualHost:/'
     DEF_CFG_ATTRS = {}
     
@@ -229,15 +235,16 @@ class VirtualHost(Resource):
         for hostAliasId in self.getHostAliasIds():
             AdminConfig.remove(hostAliasId)
     
-class Cluster(ResourceMBean):
+class Cluster(Resource):
     __parent_attrname__ = 'cell'
     
+    DEF_CFG_TYPE    = 'Cluster'
     DEF_CFG_PATH    = '%(scope)sCluster:%(name)s/'
     DEF_CFG_ATTRS = {
         'name' : None
     }
     
-    def __init__(self, name, cell = Cell()):
+    def __init__(self, name, cell = CURRENT_CELL):
         self.name = name
         self.cell = cell
         
@@ -254,12 +261,13 @@ class Cluster(ResourceMBean):
     def __getmbeanid__(self):
         return AdminControl.queryNames('cell=%s,type=Cluster,name=%s,*' % (self.cell.name, self.name))
 
-class Server(ResourceMBean):
+class Server(Resource):
+    DEF_CFG_TYPE    = 'Server'
     DEF_CFG_PARENT = '%(parent)sNode:%(nodeName)s/'
     DEF_CFG_PATH    = '%(scope)sServer:%(serverName)s/'
     DEF_CFG_ATTRS = {}
     
-    def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
+    def __init__(self, serverId = AdminControl.getNode(), parent = CURRENT_CELL):
         ResourceMBean.__init__(self)
         self.serverId   = serverId
         self.nodeName   = getNodeName(serverId)
@@ -337,7 +345,9 @@ class Server(ResourceMBean):
         pass
 
 class NodeAgent(Server):
-    def __init__(self, serverId, parent = Cell()):
+    DEF_CFG_TYPE    = 'NodeAgent'
+    
+    def __init__(self, serverId, parent = CURRENT_CELL):
         Server.__init__(self, serverId, parent)
         #self.nodeName = getNodeName(serverId)
 
@@ -349,30 +359,32 @@ class NodeAgent(Server):
             raise Exception, 'JMX MBEAN UNAVAILABLE'
 
 class Node(Server):
+    DEF_CFG_TYPE    = 'Node'
 
-    def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
+    def __init__(self, serverId = AdminControl.getNode(), parent = CURRENT_CELL):
         Server.__init__(self, serverId, parent)
 
-class ApplicationServer(Node):
+class ApplicationServer(Server):
+    DEF_CFG_TYPE    = 'ApplicationServer'
 	
-	def __init__(self, serverId = AdminControl.getNode(), parent = Cell()):
+    def __init__(self, serverId = AdminControl.getNode(), parent = CURRENT_CELL):
 		Node.__init__(self, serverId, parent)
 
-	def __getconfigid__(self):
+    def __getconfigid__(self):
 		return AdminConfig.list(self.__was_cfg_type__, self.parent.__getconfigid__()).splitlines()[0]
 
-	def getApplicationServerId(self):
+    def getApplicationServerId(self):
 		"""@deprecated Clients should use the 'magic' method __getconfigid__()"""
 		return self.__getconfigid__()
 
-def getBasePort(cell = Cell()):
+def getBasePort(cell = CURRENT_CELL):
     port = cell.getAdminhostPort()
     if cell.isClustered():
         return port
     else:
         return port - 1
 
-def changeSIBandSIPPortsInMServers(cell = Cell()): 
+def changeSIBandSIPPortsInMServers(cell = CURRENT_CELL): 
     #offset used to start the port must be hardcoded here 
     startingPort = getBasePort(cell) + 90 
     endingPort   = startingPort      + 7 
@@ -389,7 +401,7 @@ def changeSIBandSIPPortsInMServers(cell = Cell()):
     
     changePorts(cell.getManagedServers(), endPoints)
 
-def changeWCDefaultPortsInMServers(cell = Cell()): 
+def changeWCDefaultPortsInMServers(cell = CURRENT_CELL): 
     #offset used to start the port must be hardcoded here 
     startingPort = getBasePort(cell) + 50 
     endingPort   = startingPort      + 2 
@@ -403,7 +415,7 @@ def changeWCDefaultPortsInMServers(cell = Cell()):
     changePorts(cell.getManagedServers(), endPoints)
 
 
-def changeORBListenerPortInMServers(cell = Cell()): 
+def changeORBListenerPortInMServers(cell = CURRENT_CELL): 
     #offset used to start the port must be hardcoded here 
     startingPort = getBasePort(cell) + 20 
     endingPort   = startingPort      + 1 

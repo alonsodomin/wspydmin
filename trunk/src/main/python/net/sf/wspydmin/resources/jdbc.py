@@ -24,8 +24,8 @@ from com.ibm.websphere.management.exception        import AdminException
 from com.ibm.ws.scripting                          import ScriptingException
 
 from net.sf.wspydmin                               import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                          import Resource
-from net.sf.wspydmin.resources.topology            import Cell
+from net.sf.wspydmin.resources                     import Resource
+from net.sf.wspydmin.resources.topology            import CURRENT_CELL
 from net.sf.wspydmin.resources.pool                import ConnectionPool
 from net.sf.wspydmin.resources.security            import JAASAuthData
 from net.sf.wspydmin.resources.properties          import J2EEPropertyHolderResource
@@ -36,7 +36,7 @@ class J2CResourceAdapter(Resource):
         'name' : None
     }
     
-    def __init__(self, name, cell = Cell()):
+    def __init__(self, name, cell = CURRENT_CELL):
         Resource.__init__(self)
         self.name   = name
         self.parent = cell
@@ -86,7 +86,7 @@ class JDBCProvider(Resource):
                     'description' : None
 	}
 	
-	def __init__(self, name, parent = Cell()):
+	def __init__(self, name, parent = CURRENT_CELL):
 		Resource.__init__(self)
 		self.name   = name
 		self.parent = parent

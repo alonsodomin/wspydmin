@@ -18,12 +18,13 @@
 from java.lang                           import UnsupportedOperationException
 
 from net.sf.wspydmin                     import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.lang                import ResourceMBean, Resource
+from net.sf.wspydmin.resources           import Resource
 from net.sf.wspydmin.utils               import *
 from net.sf.wspydmin.resources.tunning   import ThreadPool
 
 
 class MessageListenerService(Resource):
+	DEF_CFG_TYPE    = 'MessageListenerService'
 	DEF_CFG_PATH    = '/MessageListenerService:/'
 	DEF_CFG_ATTRS = {
                             'enable' : 'false',
@@ -83,7 +84,8 @@ class MessageListenerService(Resource):
 		for name, lp in self.getListenerPorts().items():
 			lp.remove()
 
-class ListenerPort(ResourceMBean):
+class ListenerPort(Resource):
+	DEF_CFG_TYPE    = 'ListenerPort'
 	DEF_CFG_PATH      = '/ListenerPort:%(name)s/'
 	DEF_CFG_ATTRS   = {
                              'name' : None,
@@ -124,6 +126,7 @@ class ListenerPort(ResourceMBean):
 		return (AdminControl.getAttribute(self.__getmbeanid__(), 'started') == 'true')
 	
 class StateManageable(Resource):
+	DEF_CFG_TYPE    = 'StateManageable'
 	DEF_CFG_PATH    = '%(scope)sStateManageable:/'
 	DEF_CFG_ATTRS = {
         'initialState' : 'START'      

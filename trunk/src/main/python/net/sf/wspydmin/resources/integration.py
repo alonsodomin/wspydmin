@@ -18,7 +18,7 @@
 import logging
 
 from net.sf.wspydmin                     import AdminConfig, AdminControl, AdminTask
-from net.sf.wspydmin.lang                import Resource
+from net.sf.wspydmin.resources           import Resource
 from net.sf.wspydmin.resources.jdbc      import DataSource
 from net.sf.wspydmin.resources.topology  import Cell, Node, Server, Cluster
 
@@ -220,7 +220,7 @@ class SIBJMSConnectionFactory(SIResource):
 	def removeAll(self):
 		args  = '[ -type %s]' % self.type
 		for id in AdminTask.listSIBJMSConnectionFactories(self.__was_cfg_parent__, args).splitlines():
-			logging.info("Deleting SIBJMSConnectionFactory %s" % id.split('(')[0]))
+			logging.info("Deleting SIBJMSConnectionFactory %s", id.split('(')[0])
 			AdminTask.deleteSIBJMSConnectionFactory(id)
 
 class SIBJMSQueueConnectionFactory(SIBJMSConnectionFactory):

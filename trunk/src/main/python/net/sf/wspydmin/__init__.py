@@ -21,8 +21,11 @@ __author__  = "A. Alonso Dominguez <alonsoft@users.sf.net>"
 __status__  = "alpha"
 __version__ = "0.2.0"
 
+import types, logging
 import AdminTask, AdminConfig, AdminControl, AdminApp, Help
-from java.lang import Class as JavaClass, Array as JavaArray, Exception as JavaException, IllegalArgumentException, ClassNotFoundException
+
+from java.lang         import Class as JavaClass, Exception as JavaException, IllegalArgumentException, ClassNotFoundException
+from java.lang.reflect import Array as JavaArray
 
 ########################################################################
 ##                   WebSphere basic data types                       ##
@@ -128,6 +131,27 @@ class WasArrayDataType(WasDataType):
 		str = str + ']'
 		return str
 
+class WasEnumDataType(WasDataType):
+	TYPENAME = 'ENUM'
+	
+	def __init__(self, values):
+		WasDataType.__init__(self, WasEnumDataType.TYPENAME)
+		self.values = values
+		for value in values:
+			self.__dict__[value] = value
+	
+	def from_str(self, value):
+		if self.__dict__.has_key(value):
+			return self.__dict__[value]
+		else:
+			raise "Invalid enum value: %s" % value
+	
+	def to_str(self, value):
+		if self.__dict__.has_key(str(value)):
+			return self.__dict__[str(value)]
+		else:
+			raise "Invalid enum value: %s" % value
+
 class WasBooleanDataType(WasDataType):
 	"""
 	Boolean data types handler
@@ -228,49 +252,41 @@ __WAS_DATATYPES = {
 __WAS_OBJTYPES = {
 }
 
-def __was_define_type(typename, typeclass):
+def was_define_type(typename, typeclass):
 	if __WAS_DATATYPES.has_key(typename):
 		raise WasDataTypeError, 'Type already registered: %s' % typename
 	__WAS_DATATYPES[typename] = typeclass()
 
-def __was_define_class(klass):
-	if __WAS_OBJTYPES.has_key(klass.__name__):
-		raise WasDataTypeError, 'Object class already registered: %s' % klass.__name__
-	__WAS_OBJTYPES[klass.__name__] = klass
+def was_define_class(klass, typename = None):
+	if (typename is None):
+		typename = klass.__name__
+	if __WAS_OBJTYPES.has_key(typename):
+		raise WasDataTypeError, 'Object class already registered: %s' % typename
+	__WAS_OBJTYPES[typename] = klass
+	logging.debug("Defined class '%s' with bases: %s.", typename, klass.__bases__)
 	
 # Define WebSphere's configuration primitive types
-__was_define_type(WasBooleanDataType.TYPENAME, WasBooleanDataType)
-__was_define_type(WasIntegerDataType.TYPENAME, WasIntegerDataType)
-__was_define_type(WasStringDataType.TYPENAME, WasStringDataType)
+was_define_type(WasBooleanDataType.TYPENAME, WasBooleanDataType)
+was_define_type(WasIntegerDataType.TYPENAME, WasIntegerDataType)
+was_define_type(WasStringDataType.TYPENAME, WasStringDataType)
 
 ########################################################################
 ##                      Utility functions                             ##
 ########################################################################
-
-def was_getconfigid(id):
-	if id is None: return None
-	
-	try:
-		obj = AdminConfig.getid(id).splitlines()[0]
-		if (obj is None) or (obj == ''):
-			obj = None
-		return obj
-	except IndexError:
-		pass
-	except ScriptingException:
-		pass
-	return None
 
 def was_type(typename):
 	if (typename == '') or (typename is None): return None
 	if typename.endswith('*'):
 		typename = typename[0:-1]
 		return WasArrayDataType(was_type(typename))
+	elif typename.startswith('ENUM'):
+		values = typename.split('(')[1].split(', ')
+		return WasEnumDataType(values)
 	elif __WAS_DATATYPES.has_key(typename):
 		return __WAS_DATATYPES[typename]
 	else:
 		if not __WAS_OBJTYPES.has_key(typename):
-			raise IllegalArgumentException, "Unknown type name: '%s'" % typename
+			raise WasDataTypeError, typename
 		return WasObjectDataType(__WAS_OBJTYPES[typename])
 
 def java_type(typename):
@@ -284,3 +300,141 @@ def java_type(typename):
 		return JavaArray.new(elementType, 0).getClass()
 	return None
 
+########################################################################
+##                      WebSphere metaclasses                         ##
+########################################################################
+
+class WasObjectMethodWrapper:
+
+	def __init__(self, func, inst):
+		self.func     = func
+		self.inst     = inst
+		self.__name__ = self.func.__name__
+
+	def __call__(self, *args, **kw):
+		logging.debug("Invoking function '%s.%s' with args: %s", self.inst.__wasclass__.__name__, self.__name__, args)
+		return apply(self.func, (self.inst,) + args, kw)
+
+class WasObjectSuperHelper:
+	
+	def __init__(self, instance, klass):
+		self.instance = instance
+		self.klass = klass
+	
+	def __getattr__(self, name):
+		for base in self.klass.__bases__:
+			try:
+				return base.__getattr__(name)
+			except AttributeError:
+				pass
+		raise AttributeError, name
+		
+	def __call__(self, *args, **kwargs):
+		for base in self.klass.__bases__:
+			try:
+				init = getattr(base, '__init__')
+				apply(init, (self.instance,) + args, kwargs)
+			except AttributeError:
+				pass
+
+class WasObjectClassHelper:
+	
+	__methodwrapper__ = WasObjectMethodWrapper
+	
+	def __helperinit__(self, klass):
+		self.__wasclass__ = klass
+		self.__wassuper__ = WasObjectSuperHelper(self, klass)
+	
+	def __getattr__(self, name):
+		# Invoked for any attr not in the instance's __dict__
+		try:
+			raw = self.__wasclass__.__getattr__(name)
+		except AttributeError:
+			try:
+				ga = self.__wasclass__.__getattr__('__usergetattr__')
+			except (KeyError, AttributeError):
+				return self.__missedattr__(name)
+			else:
+				return ga(self, name)
+		else:
+			if type(raw) != types.FunctionType:
+				return raw
+			return self.__methodwrapper__(raw, self)
+	
+	def __define_classtype__(self):
+		was_define_class(self.__wasclass__)
+	
+	def __define_instance__(self):
+		pass
+	
+	def __missedattr__(self, name):
+		raise AttributeError, name
+
+class WasObjectClass:
+	__helper__    = WasObjectClassHelper
+	__inited      = 0
+
+	def __init__(self, name, bases = (), dict = {}):
+		try:
+			ga = dict['__getattr__']
+		except KeyError:
+			pass
+		else:
+			dict['__usergetattr__'] = ga
+			del dict['__getattr__']
+		
+		self.__name__     = name
+		self.__bases__    = bases
+		self.__realdict__ = dict
+		
+		was_define_class(self)
+		self.__inited = 1
+	
+	def __getattr__(self, name):
+		try:
+			return self.__realdict__[name]
+		except KeyError:
+			for base in self.__bases__:
+				try:
+					return base.__getattr__(name)
+				except AttributeError:
+					pass
+			raise AttributeError, name
+	
+	def __setattr__(self, name, value):
+		if not self.__inited:
+			self.__dict__[name] = value
+		else:
+			self.__realdict__[name] = value
+	
+	def __call__(self, *args, **kwargs):
+		inst = self.__helper__()
+		inst.__helperinit__(self)
+		#inst.__define_classtype__()
+		logging.debug("Creating new instance of class '%s'", self.__name__)
+		
+		try:
+			init = getattr(inst, '__init__')
+			apply(init, args, kwargs)
+		except AttributeError:
+			pass
+		
+		inst.__define_instance__()
+		return inst
+
+##
+# Base WAS object class which should be used as the
+# primary super class for any WAS object instance
+WasObject = WasObjectClass('WasObject')
+
+class ChainedMethodInvoker:
+	def __init__(self, metaclass, methodname, instances):
+		self.metaclass   = metaclass
+		self.methodname  = methodname
+		self.instances   = instances
+	
+	def __call__(self, *args, **kwargs):
+		retval = None
+		for inst in self.instances:
+			retval = apply(self.methodname, (inst,) + args, kwargs)
+		return retval

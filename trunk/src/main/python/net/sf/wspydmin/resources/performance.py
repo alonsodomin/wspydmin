@@ -16,8 +16,8 @@
 #
 
 from net.sf.wspydmin                      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                 import Resource
-from net.sf.wspydmin.resources.topology   import Cell
+from net.sf.wspydmin.resources            import Resource
+from net.sf.wspydmin.resources.topology   import CURRENT_CELL
 from net.sf.wspydmin.resources.properties import PropertyHolderResource
 
 class PMIService(PropertyHolderResource):
@@ -29,7 +29,7 @@ class PMIService(PropertyHolderResource):
 		'syncronizedUpdate' : None
 	}
 	
-	def __init__(self, node, server, parent = Cell()):
+	def __init__(self, node, server, parent = CURRENT_CELL):
 		self.__wassuper__()
 		self.node   = node
 		self.server = server

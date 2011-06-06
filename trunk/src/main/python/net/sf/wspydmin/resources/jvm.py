@@ -16,12 +16,13 @@
 #
 
 from net.sf.wspydmin                      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                 import Resource
+from net.sf.wspydmin.resources            import Resource
 from net.sf.wspydmin.resources.properties import PropertyHolderResource
 
 class JavaVirtualMachine(PropertyHolderResource):
+	DEF_CFG_TYPE    = 'JavaVirtualMachine'
 	DEF_CFG_PATH    = '/JavaVirtualMachine:/'
-	DEF_CFG_ATTRS = {
+	DEF_CFG_ATTRS   = {
 			          'bootClasspath' : None,
 			              'classpath' : None,
 			              'debugArgs' : None,

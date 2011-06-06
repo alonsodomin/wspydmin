@@ -16,28 +16,33 @@
 #
 
 from net.sf.wspydmin                      import AdminConfig, AdminControl
-from net.sf.wspydmin.lang                 import Resource
-from net.sf.wspydmin.resources.topology   import Cell
+from net.sf.wspydmin.resources            import Resource
+from net.sf.wspydmin.resources.topology   import CURRENT_CELL
+
+#class ProtocolProvider(Resource):
+#	DEF_CFG_TYPE = 'ProtocolProvider'
 
 class MailProvider(Resource):
-	DEF_CFG_PATH = '%(scope)sMailProvider:%(name)s/'
+	DEF_CFG_TYPE  = 'MailProvider'
+	DEF_CFG_PATH  = '%(scope)sMailProvider:%(name)s/'
 	DEF_CFG_ATTRS = {
                     'name' : None,
 	}
 	
-	def __init__(self, name, parent = Cell()):
-		Resource.__init__(self)
+	def __init__(self, name, parent = CURRENT_CELL):
 		self.name   = name
 		self.parent = parent
+		#Resource.__init__(self)
 
 class DefaultMailProvider(MailProvider):
 	MAIL_PROVIDER_NAME = 'Built-in Mail Provider'
 	
-	def __init__(self, parent = Cell()):
+	def __init__(self, parent = CURRENT_CELL):
 		MailProvider.__init__(self, DefaultMailProvider.MAIL_PROVIDER_NAME, parent)
 
 class MailSession(Resource):
-	DEF_CFG_PATH    = '%(scope)sMailSession:%(name)s/'
+	DEF_CFG_TYPE  = 'MailSession'
+	DEF_CFG_PATH  = '%(scope)sMailSession:%(name)s/'
 	DEF_CFG_ATTRS = {
                     'name' : None,
                 'jndiName' : None,

@@ -18,7 +18,7 @@
 from java.lang                              import IllegalArgumentException
 
 from net.sf.wspydmin                        import AdminConfig
-from net.sf.wspydmin.lang                   import Resource
+from net.sf.wspydmin.resources              import Resource
 from net.sf.wspydmin.resources.topology     import ApplicationServer
 from net.sf.wspydmin.resources.classloaders import ClassLoader
 
