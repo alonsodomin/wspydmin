@@ -1,0 +1,181 @@
+#!/bin/sh
+
+# WSPydmin - WebSphere Python Administration Library
+# Copyright (C) 2010  Antonio Alonso Domínguez
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+DISCLAIMER <<EOF
+WSPydmin  Copyright (C) 2010  Antonio Alonso Domínguez
+
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+This is free software, and you are welcome to redistribute it
+under certain conditions; type `show c' for details.
+EOF
+
+# Resolve links - $0 may be a softlink - and obtain
+# the root directory of the script environment
+
+PRG="$0"
+
+while [ -h "${PRG}" ]; do
+	ls=$(ls -ld "${PRG}")
+	link=$(expr "${ls}" : '.*->\(.*\)$')
+	if expr "${link}" : '/.*' > /dev/null; then
+		PRG="${link}"
+	else
+		PRG=$(dirname "${PRG}")/"${link}"
+	fi
+done
+
+WSPYDMIN_HOME=$(dirname ${PRG})
+WSPYDMIN_CONF="${WSPYDMIN_HOME}/etc/wspydmin.conf"
+WSPYDMIN_LIB="${WSPYMIN_HOME}/python"
+WSPYDMIN_INCLUDE="${WSPYMIN_HOME}/include"
+
+if [ ! -f "${WSPYDMIN_CONF}" ]; then
+	echo "ERROR: Configuration file '${WSPYDMIN_CONF}' not found"
+	exit 1
+fi
+source ${WSPYDMIN_CONF}
+
+#
+# Check environment configuration
+#
+if [ -z "${WAS_HOME}" ]; then
+	echo "ERROR: Configuration variable WAS_HOME was not set."
+	exit 1
+fi
+
+if [ ! -d "${WAS_HOME}" ]; then
+	echo "ERROR: WAS_HOME: ${WAS_HOME} is not a directory."
+	exit 1
+fi
+
+WSADMIN_CMD="${WAS_HOME}/bin/wsadmin.sh"
+
+if [ ! -f "${WASADMIN_CMD}" ]; then
+	echo "ERROR: WAS scripting interpreter '${WSADMIN_CMD}' doesn't exists."
+	exit 1
+fi
+
+export WAS_HOME
+export WSPYDMIN_HOME
+export WSPYDMIN_LIB
+export WSPYDMIN_INCLUDE
+
+#
+# Parse command line arguments to override defaults
+#
+WSADMIN_ARGS="-lang jython -profile ${WSPYMIN_LIB}/wasprofile.py"
+WSADMIN_CLASSPATH=
+
+SCRIPT_ARGS=
+SCRIPT_NAME=
+
+while [ ! -z "$1" ]; do
+	case "$1" in
+		"-lang")
+			shift
+			if [ "$1" != "jython" ]; then
+				echo "ERROR: WSPydmin should always use Jython as script language."
+				exit 1 
+			fi
+			;;
+		"-profile")
+			shift
+			echo "ERROR: An alternative profile script is not supported"
+			exit 1
+			;;
+		"-username")
+			shift
+			WAS_USERNAME=$1
+			;;
+		"-password")
+			shift
+			WAS_PASSWORD=$1
+			;;
+		"-profileName")
+			shift
+			WAS_DEFAULT_PROFILE=$1
+			;;
+		"-wsadmin_classpath")
+			shift
+			WSADMIN_CLASSPATH=$1
+			;;
+		"-f")
+			shift
+			if [ -z "${SCRIPT_NAME}" ]; then
+				SCRIPT_NAME=$1
+			else
+				echo "ERROR: Which one of these scripts you want to run: '${SCRIPT_NAME}' or '$1'?"
+				exit 1
+			fi
+			;;
+		*)
+			if [[ $1 == -* ]]; then
+				WSADMIN_ARGS="${WSADMIN_ARGS} $1 $2"
+				shift
+			elif [ -z "${SCRIPT_NAME}" ]; then
+				SCRIPT_NAME=$1
+			else
+				SCRIPT_ARGS="${SCRIPT_ARGS} $1"
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ ! -z "${WAS_USERNAME}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -username ${WAS_USERNAME}"
+fi
+
+if [ ! -z "${WAS_PASSWORD}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -password ${WAS_PASSWORD}"
+fi
+
+if [ ! -z "${WAS_DEFAULT_PROFILE}" ]; then
+	WSADMIN_ARGS="${WSADMIN_ARGS} -profileName ${WAS_DEFAULT_PROFILE}"
+fi
+
+#
+# Invoke wsadmin.sh either interactively or silently
+#
+
+# Fill wsadmin.sh classpath
+for f in "${WSPYDMIN_INCLUDE}/java/*.jar"; do
+    if [ "${WSADMIN_CLASSPATH}" == "" ]; then
+        WSADMIN_CLASSPATH=$f
+    else
+        WSADMIN_CLASSPATH="${WSADMIN_CLASSPATH}:$f"
+    fi
+done
+
+# Normalize script pathname
+SCRIPT_NAME=$(readlink -n -f ${SCRIPT_NAME})
+SCRIPT_HOME=$(dirname ${SCRIPT_NAME})
+
+if [ ! -z "${SCRIPT_HOME}" ]; then
+    export SCRIPT_HOME
+fi
+
+if [ -z "${SCRIPT_NAME}" ]; then
+	echo $DISCLAIMER
+	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} ${SCRIPT_ARGS}
+	exit 0
+else
+	${WSADMIN_CMD} ${WSADMIN_ARGS} -wsadmin_classpath ${WSADMIN_CLASSPATH} -f ${SCRIPT_NAME} ${SCRIPT_ARGS}
+	exit $?
+fi
